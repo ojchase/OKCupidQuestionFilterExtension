@@ -9,19 +9,12 @@
   }
   window.hasRun = true;
 
-  /**
-   * Given a URL to a beast image, remove all existing beasts, then
-   * create and style an IMG node pointing to
-   * that image, then insert the node into the document.
-   */
-  function insertBeast(beastURL) {
-    removeExistingBeasts();
-    let beastImage = document.createElement("img");
-    beastImage.setAttribute("src", beastURL);
-    beastImage.style.height = "100vh";
-    beastImage.className = "beastify-image";
-    document.body.appendChild(beastImage);
-  }
+	/**
+	 * Applies the given filter
+	 */
+	function applyFilter(selectedFilter) {
+		alert(`Applying filter: ${selectedFilter}`);
+	}
 
   /**
    * Remove every beast from the page.
@@ -39,7 +32,7 @@
   */
   browser.runtime.onMessage.addListener((message) => {
     if (message.command === "beastify") {
-      insertBeast(message.beastURL);
+      applyFilter(message.beastURL);
     } else if (message.command === "reset") {
       removeExistingBeasts();
     }
