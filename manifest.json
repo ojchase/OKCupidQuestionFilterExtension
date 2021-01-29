@@ -1,10 +1,10 @@
 {
 
-  "description": "Adds a browser action icon to the toolbar. Click the button to choose a beast. The active tab's body content is then replaced with a picture of the chosen beast. See https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Examples#beastify",
+  "description": "Allows filtering of answered questions on OKCupid.com dating profiles according to user-defined categories",
   "manifest_version": 2,
-  "name": "Beastify",
+  "name": "OKCupidQuestionFilter",
   "version": "1.0",
-  "homepage_url": "https://github.com/mdn/webextensions-examples/tree/master/beastify",
+  "homepage_url": "https://github.com/ojchase/OKCupidQuestionFilterExtension",
   "icons": {
     "48": "icons/archer.svg"
   },
@@ -15,7 +15,7 @@
 
   "browser_action": {
     "default_icon": "icons/archer.svg",
-    "default_title": "Beastify",
+    "default_title": "OKCupidQuestionFilter",
     "default_popup": "popup/choose_beast.html"
   },
 
