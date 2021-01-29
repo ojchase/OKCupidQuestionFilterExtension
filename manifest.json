@@ -6,7 +6,7 @@
   "version": "1.0",
   "homepage_url": "https://github.com/mdn/webextensions-examples/tree/master/beastify",
   "icons": {
-    "48": "icons/beasts-48.png"
+    "48": "icons/archer.svg"
   },
 
   "permissions": [
@@ -14,12 +14,7 @@
   ],
 
   "browser_action": {
-    "default_icon": "icons/beasts-32.png",
-    "theme_icons": [{
-        "light": "icons/beasts-32-light.png",
-        "dark": "icons/beasts-32.png",
-        "size": 32
-    }],
+    "default_icon": "icons/archer.svg",
     "default_title": "Beastify",
     "default_popup": "popup/choose_beast.html"
   },
