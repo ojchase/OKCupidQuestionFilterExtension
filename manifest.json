@@ -20,7 +20,7 @@
   },
 
   "web_accessible_resources": [
-    "beasts/*.jpg"
+    "question_data.csv"
   ]
 
 }

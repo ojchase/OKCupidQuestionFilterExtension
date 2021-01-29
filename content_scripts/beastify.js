@@ -9,10 +9,24 @@
   }
   window.hasRun = true;
 
+	function getFilePath(fileName){
+		return browser.extension.getURL(fileName);
+	}
+
 	/**
 	 * Applies the given filter
 	 */
 	function applyFilter(selectedFilter) {
+		if(selectedFilter === "Test File Read"){
+			// Do stuff
+			filePath = getFilePath("question_data.csv");
+fetch(filePath)
+  .then(response => response.text())
+  .then(text => console.log(text))
+//  .then(text => alert(text))
+  // outputs the content of the text file
+			return;
+		}
 		alert(`Applying filter: ${selectedFilter}`);
 	}
 
