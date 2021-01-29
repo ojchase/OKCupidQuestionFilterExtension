@@ -1,0 +1,7 @@
+https://www.flaticon.com/free-icon/archer_4082463?term=arrow&page=2&position=74&page=2&position=74&related_id=4082463&origin=search
+
+Will need attribution if I ever do anything with this.
+
+
+
+I am also copying in jquery and PapaParse. Both are under the MIT license. If I understand correctly, as long as I don't touch the copyright headers in the files, I'm free to do what I want with them.
