@@ -54,6 +54,7 @@ function listenForClicks() {
     /**
      * Get the active tab,
      * then call "beastify()" or "reset()" as appropriate.
+     * The script is already loaded with the page from the manifest.
      */
     if (e.target.classList.contains("beast")) {
       browser.tabs.query({active: true, currentWindow: true})
@@ -68,21 +69,5 @@ function listenForClicks() {
   });
 }
 
-/**
- * There was an error executing the script.
- * Display the popup's error message, and hide the normal UI.
- */
-function reportExecuteScriptError(error) {
-  document.querySelector("#popup-content").classList.add("hidden");
-  document.querySelector("#error-content").classList.remove("hidden");
-  console.error(`Failed to execute beastify content script: ${error.message}`);
-}
+listenForClicks();
 
-/**
- * When the popup loads, inject a content script into the active tab,
- * and add a click handler.
- * If we couldn't inject the script, handle the error.
- */
-browser.tabs.executeScript({file: "/content_scripts/beastify.js"})
-.then(listenForClicks)
-.catch(reportExecuteScriptError);
