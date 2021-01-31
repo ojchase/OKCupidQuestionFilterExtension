@@ -19,8 +19,12 @@ function addObserverToQuestionList() {
 	var questionList = document.querySelector("div.profile-questions");
 	if(!questionList) {
 		//The node we need does not exist yet.
-		//Wait 500ms and try again
-		window.setTimeout(addObserverToQuestionList,500);
+		//Wait 2s and try again
+		//Note that the current design has this script active on all okcupid.com pages,
+		//not just the questions page, as I can't detect the questions page being up if
+		//it was launched via okcupid internal links.
+		//See https://stackoverflow.com/questions/20865581/chrome-extension-content-script-not-loaded-until-page-is-refreshed
+		window.setTimeout(addObserverToQuestionList,2000);
 		return;
 	}
 	listenForQuestionListUpdates();
