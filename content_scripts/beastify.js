@@ -12,13 +12,19 @@
 			filePath = getFilePath("question_data.csv");
 fetch(filePath)
   .then(response => response.text())
-  .then(text => console.log(text))
+  .then(text => doStuff(text))
 //  .then(text => alert(text))
   // outputs the content of the text file
 			return;
 		}
 		alert(`Applying filter: ${selectedFilter}`);
 	}
+
+function doStuff(text){
+let x = Papa.parse(text);
+console.log(x);
+//var results = Papa.parse(csvString, config);
+}
 
   /**
    * Remove every beast from the page.
