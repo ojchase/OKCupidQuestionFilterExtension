@@ -1,12 +1,4 @@
 /**
- * CSS to hide everything on the page,
- * except for elements that have the "beastify-image" class.
- */
-const hidePage = `body > :not(.beastify-image) {
-                    display: none;
-                  }`;
-
-/**
  * Listen for clicks on the buttons, and send the appropriate message to
  * the content script in the page.
  */
@@ -23,12 +15,10 @@ function listenForClicks() {
      * send a "beastify" message to the content script in the active tab.
      */
     function beastify(tabs) {
-      browser.tabs.insertCSS({code: hidePage}).then(() => {
-        let selectedFilter = e.target.textContent;
-        browser.tabs.sendMessage(tabs[0].id, {
-          command: "beastify",
-          beastURL: selectedFilter
-        });
+      let selectedFilter = e.target.textContent;
+      browser.tabs.sendMessage(tabs[0].id, {
+        command: "beastify",
+        beastURL: selectedFilter
       });
     }
 
@@ -37,10 +27,8 @@ function listenForClicks() {
      * send a "reset" message to the content script in the active tab.
      */
     function reset(tabs) {
-      browser.tabs.removeCSS({code: hidePage}).then(() => {
-        browser.tabs.sendMessage(tabs[0].id, {
-          command: "reset",
-        });
+      browser.tabs.sendMessage(tabs[0].id, {
+        command: "reset",
       });
     }
 
