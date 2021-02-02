@@ -11,14 +11,8 @@
 		if(selectedFilter === "Test File Read"){
 			// Do stuff
 			readQuestionConfig().then(function(headerAndQuestions){
-				console.log(headerAndQuestions);
 				let questionCategories = headerAndQuestions.questionCategories;
 				let questions = headerAndQuestions.questions;
-				console.log(questionCategories);
-				console.log(questions);
-				for(question of questions){
-					console.log(`${questionCategories[1]} question?: [${question[questionCategories[1]]}] [${question.QuestionText}]`);
-				}
 				let newQuestion = createQuestion("This is a test question", "Spiritual", "FALSE");
 				questions.push(newQuestion);
 				saveQuestions(questionCategories, questions);
@@ -27,7 +21,6 @@
 		}
 		if(selectedFilter === "Spiritual"){
 			readQuestionConfig().then(function(headerAndQuestions){
-				console.log(headerAndQuestions);
 				let questionCategories = headerAndQuestions.questionCategories;
 				let questions = headerAndQuestions.questions;
 				let desiredQuestions = getQuestionTextsByCategoryAndValue(questions, "Spiritual", "TRUE");
@@ -47,10 +40,8 @@
 		return fetch(filePath)
 			.then(response => response.text())
 			.then((text) => {
-				console.log("starting to parse text");
 				let papaParsedObject = Papa.parse(text, {header: true, skipEmptyLines: true});
 				let headers = papaParsedObject.meta.fields;
-				console.log(papaParsedObject);
 				return {
 					questionCategories: headers,
 					questions: papaParsedObject.data
