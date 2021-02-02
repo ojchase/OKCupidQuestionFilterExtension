@@ -1,4 +1,5 @@
 (function() {
+	var jq = jQuery.noConflict();
 	function getFilePath(fileName){
 		return browser.extension.getURL(fileName);
 	}
@@ -22,7 +23,19 @@
 				questions.push(newQuestion);
 				saveQuestions(questionCategories, questions);
 			});
-			console.log("returning from applyfilter");
+			return;
+		}
+		if(selectedFilter === "Spiritual"){
+			readQuestionConfig().then(function(headerAndQuestions){
+				console.log(headerAndQuestions);
+				let questionCategories = headerAndQuestions.questionCategories;
+				let questions = headerAndQuestions.questions;
+				let desiredQuestions = getQuestionTextsByCategoryAndValue(questions, "Spiritual", "TRUE");
+				jq(`div.profile-question`).hide();
+				for (var q of desiredQuestions){
+					jq(`div.profile-question:has(button.profile-question-content:has(h3:contains("${q}")))`).show();
+				}
+			});
 			return;
 		}
 		alert(`Applying filter: ${selectedFilter}`);
@@ -47,6 +60,11 @@
 	
 	function getQuestionByText(questions, text){
 		return questions.find(q => q.QuestionText === text);
+	}
+	
+	function getQuestionTextsByCategoryAndValue(questions, category, value){
+		return questions.filter(q => q[category] === value)
+			.map(q => q.QuestionText);
 	}
 	
 	function createQuestion(question, category, value){
