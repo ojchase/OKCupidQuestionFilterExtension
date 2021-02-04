@@ -15,15 +15,11 @@ Promise.all([questionCategories, questions]).then(function([questionCategories, 
 
 function listenForRequests(request, sender, sendResponse){
 	if(request === "GetQuestionCategories"){
-		sendQuestionCategories(sendResponse);
+		return questionCategories; // async responses are supposed to be a promise for the data in question
 	}
 	else{
 		console.warn(`Unrecognized request: ${request}`);
 	}
-}
-
-function sendQuestionCategories(sendResponse){
-	sendResponse({response: "response from background script"});
 }
 
 function getFilePath(fileName){
