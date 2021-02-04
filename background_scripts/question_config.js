@@ -1,3 +1,4 @@
+listener = listenForRequests;
 readQuestionConfig().then(function(headerAndQuestions){
 	let questionCategories = headerAndQuestions.questionCategories;
 	let questions = headerAndQuestions.questions;
@@ -6,6 +7,18 @@ readQuestionConfig().then(function(headerAndQuestions){
 	saveQuestions(questionCategories, questions);
 });
 
+function listenForRequests(request, sender, sendResponse){
+	if(request === "GetQuestionCategories"){
+		sendQuestionCategories(sendResponse);
+	}
+	else{
+		console.warn(`Unrecognized request: ${request}`);
+	}
+}
+
+function sendQuestionCategories(sendResponse){
+	sendResponse({response: "response from background script"});
+}
 
 function getFilePath(fileName){
 	return browser.extension.getURL(fileName);
