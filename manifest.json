@@ -13,6 +13,10 @@
 		"activeTab"
 	],
 
+	"background": {
+		"page": "background_scripts/background.html"
+	},
+
 	"browser_action": {
 		"default_icon": "icons/archer.svg",
 		"default_title": "OKCupidQuestionFilter",
