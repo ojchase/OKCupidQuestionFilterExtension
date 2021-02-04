@@ -1,8 +1,14 @@
 listener = listenForRequests;
-readQuestionConfig().then(function(headerAndQuestions){
-	let questionCategories = headerAndQuestions.questionCategories;
-	let questions = headerAndQuestions.questions;
-	let newQuestion = createQuestion("This is a test question", "Spiritual", "FALSE");
+browser.runtime.onMessage.addListener(listener);
+let allQuestionData = readQuestionConfig();
+let questionCategories = allQuestionData.then(function(headerAndQuestions){
+	return headerAndQuestions.questionCategories;
+});
+let questions = allQuestionData.then(function(headerAndQuestions){
+	return headerAndQuestions.questions;
+});
+let newQuestion = createQuestion("This is a test question", "Spiritual", "FALSE");
+Promise.all([questionCategories, questions]).then(function([questionCategories, questions]){
 	questions.push(newQuestion);
 	saveQuestions(questionCategories, questions);
 });
