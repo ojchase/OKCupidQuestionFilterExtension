@@ -17,6 +17,9 @@ function listenForRequests(request, sender, sendResponse){
 	if(request === "GetQuestionCategories"){
 		return questionCategories; // async responses are supposed to be a promise for the data in question
 	}
+	else if(request === "GetQuestions"){
+		return questions; // async responses are supposed to be a promise for the data in question
+	}
 	else{
 		console.warn(`Unrecognized request: ${request}`);
 	}
