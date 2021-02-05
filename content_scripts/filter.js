@@ -28,7 +28,19 @@ function addObserverToQuestionList() {
 		return;
 	}
 	listenForQuestionListUpdates();
+	createFilterButtons();
 	addBorders();
+}
+
+function createFilterButtons() {
+	let newButton = jq('button.profile-questions-filter')
+		.not('button.profile-questions-filter--isActive')
+		.first()
+		.clone();
+	newButton.children(`.profile-questions-filter-title`).text("Test Category Filter");
+	newButton.children(`.profile-questions-filter-icon`).remove();
+	newButton.children(`.profile-questions-filter-count`).text("123");
+	newButton.appendTo('div.profile-questions-filters-inner');
 }
 
 addObserverToQuestionList();
