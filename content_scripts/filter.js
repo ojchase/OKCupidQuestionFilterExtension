@@ -7,10 +7,13 @@ window.hasRunOKCupidQuestionFilterExtensionFilter = true;
 document.body.style.border = "5px solid red";
 var jq = jQuery.noConflict();
 function addBorders(){
+	entry("addBorders");
 	jq(`div.profile-question`).css('border', '3px solid blue')
+	exit("addBorders");
 }
 
 function listenForQuestionListUpdates(){
+	entry("listenForQuestionListUpdates");
 	// Thanks to https://stackoverflow.com/a/42805882/1541186 for the approach here
 	var target = document.querySelector('div.profile-questions');
 	var observer = new MutationObserver(function(mutations) {
@@ -18,9 +21,11 @@ function listenForQuestionListUpdates(){
 	});
 	var config = { childList: true};
 	observer.observe(target, config);
+	exit("listenForQuestionListUpdates");
 }
 
 function addObserverToQuestionList() {
+	entry("addObserverToQuestionList");
 	// Thanks to https://stackoverflow.com/a/40418394/1541186 for the approach
 	var questionList = document.querySelector("div.profile-questions");
 	if(!questionList) {
@@ -36,6 +41,15 @@ function addObserverToQuestionList() {
 	listenForQuestionListUpdates();
 	createFilterButtons();
 	addBorders();
+	exit("addObserverToQuestionList");
+}
+
+function entry(method){
+	console.log(`ENTERED ${method}`);
+}
+
+function exit(method){
+	console.log(`EXITED ${method}`);
 }
 
 function createFilterButtons() {
