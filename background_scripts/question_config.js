@@ -7,10 +7,10 @@ let questionCategories = allQuestionData.then(function(headerAndQuestions){
 let questions = allQuestionData.then(function(headerAndQuestions){
 	return headerAndQuestions.questions;
 });
-let newQuestion = createQuestion("This is a test question", "Spiritual", "FALSE");
+//let newQuestion = createQuestion("This is a test question", "Spiritual", "FALSE");
 Promise.all([questionCategories, questions]).then(function([questionCategories, questions]){
-	questions.push(newQuestion);
-	saveQuestions(questionCategories, questions);
+	//questions.push(newQuestion);
+	//saveQuestions(questionCategories, questions);
 });
 
 function listenForRequests(request, sender, sendResponse){
