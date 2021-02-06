@@ -1,3 +1,9 @@
+(function() {
+if (window.hasRunOKCupidQuestionFilterExtensionFilter) {
+	return;
+}
+window.hasRunOKCupidQuestionFilterExtensionFilter = true;
+  
 document.body.style.border = "5px solid red";
 var jq = jQuery.noConflict();
 function addBorders(){
@@ -44,3 +50,5 @@ function createFilterButtons() {
 }
 
 addObserverToQuestionList();
+
+})();
