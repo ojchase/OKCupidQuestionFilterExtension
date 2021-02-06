@@ -1,11 +1,29 @@
-readQuestionConfig().then(function(headerAndQuestions){
-	let questionCategories = headerAndQuestions.questionCategories;
-	let questions = headerAndQuestions.questions;
-	let newQuestion = createQuestion("This is a test question", "Spiritual", "FALSE");
+listener = listenForRequests;
+browser.runtime.onMessage.addListener(listener);
+let allQuestionData = readQuestionConfig();
+let questionCategories = allQuestionData.then(function(headerAndQuestions){
+	return headerAndQuestions.questionCategories;
+});
+let questions = allQuestionData.then(function(headerAndQuestions){
+	return headerAndQuestions.questions;
+});
+let newQuestion = createQuestion("This is a test question", "Spiritual", "FALSE");
+Promise.all([questionCategories, questions]).then(function([questionCategories, questions]){
 	questions.push(newQuestion);
 	saveQuestions(questionCategories, questions);
 });
 
+function listenForRequests(request, sender, sendResponse){
+	if(request === "GetQuestionCategories"){
+		return questionCategories; // async responses are supposed to be a promise for the data in question
+	}
+	else if(request === "GetQuestions"){
+		return questions; // async responses are supposed to be a promise for the data in question
+	}
+	else{
+		console.warn(`Unrecognized request: ${request}`);
+	}
+}
 
 function getFilePath(fileName){
 	return browser.extension.getURL(fileName);

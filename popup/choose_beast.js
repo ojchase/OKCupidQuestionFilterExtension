@@ -57,5 +57,19 @@ function listenForClicks() {
   });
 }
 
+listener = function(message){
+	console.log("Popup script got a message!");
+	console.log(message);
+}
+good = function(response){
+	console.log("Popup script got a response!");
+	console.log(response);
+}
+bad = function(response){
+	console.log("Popup script got a bad response!");
+	console.log(response);
+}
 listenForClicks();
-
+browser.runtime.onMessage.addListener(listener);
+let sent = browser.runtime.sendMessage("GetQuestionCategories");
+sent.then(good, bad);
