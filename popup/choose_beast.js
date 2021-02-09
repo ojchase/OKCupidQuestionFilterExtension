@@ -74,5 +74,7 @@ bad = function(response){
 }
 listenForClicks();
 browser.runtime.onMessage.addListener(listener);
-let sent = browser.runtime.sendMessage("GetQuestionCategories");
+let sent = browser.runtime.sendMessage({
+	"queryType": "GetQuestionCategories"
+});
 sent.then(good, bad);
