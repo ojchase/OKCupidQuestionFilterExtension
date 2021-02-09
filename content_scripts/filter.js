@@ -15,6 +15,7 @@ jq(document).ready(() => {manipulatePage(questionCategoryPromise);});
 function logSuccessResponse(response){
 	console.log("Content script got a response!");
 	console.log(response);
+	return response;
 }
 function logFailureResponse(response){
 	console.log("Content script got a bad response!");
@@ -94,9 +95,26 @@ function createFilterButtons(questionCategoryPromise) {
 			newButton.children(`.profile-questions-filter-title`).text(category);
 			newButton.children(`.profile-questions-filter-icon`).remove();
 			newButton.children(`.profile-questions-filter-count`).text("123");
+			newButton.click(function(){
+				getQuestionsInCategory(category).then(function(questions){
+					jq('div.profile-question').hide();
+					for(const desiredQuestion of questions){
+						console.log(desiredQuestion);
+						jq(`div.profile-question:has(button.profile-question-content:has(h3:contains("${desiredQuestion}")))`).show();
+					}
+				});
+			});
 			newButton.appendTo('div.profile-questions-filters-inner');
 		}
 	});
+}
+
+function getQuestionsInCategory(category){
+	let questionsInCategoryPromise = browser.runtime.sendMessage({
+		"queryType": "GetQuestionsInCategory",
+		"category": category
+	});
+	return questionsInCategoryPromise.catch(logFailureResponse).then(logSuccessResponse);
 }
 
 
