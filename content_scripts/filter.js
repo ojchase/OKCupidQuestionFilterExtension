@@ -5,14 +5,27 @@ if (window.hasRunOKCupidQuestionFilterExtensionFilter) {
 window.hasRunOKCupidQuestionFilterExtensionFilter = true;
   
 console.log("Script is running");
+let questionCategoryPromise = browser.runtime.sendMessage({
+	"queryType": "GetQuestionCategories"
+});
+questionCategoryPromise.then(logSuccessResponse).catch(logFailureResponse);
 var jq = jQuery.noConflict();
-jq(document).ready(manipulatePage);
+jq(document).ready(() => {manipulatePage(questionCategoryPromise);});
 
-function manipulatePage(){
+function logSuccessResponse(response){
+	console.log("Content script got a response!");
+	console.log(response);
+}
+function logFailureResponse(response){
+	console.log("Content script got a bad response!");
+	console.log(response);
+}
+
+function manipulatePage(questionCategoryPromise){
 	document.body.style.border = "5px solid red";
 	waitForPageToLoad('.page-loading, .isLoading').then(() => {
 		listenForQuestionListUpdates();
-		createFilterButtons();
+		createFilterButtons(questionCategoryPromise);
 		manipulateQuestionElements();
 	}).catch(() => {
 		console.log("It's not loaded!")
@@ -71,15 +84,19 @@ function listenForQuestionListUpdates(){
 	observer.observe(target, config);
 }
 
-function createFilterButtons() {
-	let newButton = jq('button.profile-questions-filter')
-		.not('button.profile-questions-filter--isActive')
-		.first()
-		.clone();
-	newButton.children(`.profile-questions-filter-title`).text("Test Category Filter");
-	newButton.children(`.profile-questions-filter-icon`).remove();
-	newButton.children(`.profile-questions-filter-count`).text("123");
-	newButton.appendTo('div.profile-questions-filters-inner');
+function createFilterButtons(questionCategoryPromise) {
+	questionCategoryPromise.then(function(categories){
+		for(const category of categories){
+			let newButton = jq('button.profile-questions-filter')
+				.not('button.profile-questions-filter--isActive')
+				.first()
+				.clone();
+			newButton.children(`.profile-questions-filter-title`).text(category);
+			newButton.children(`.profile-questions-filter-icon`).remove();
+			newButton.children(`.profile-questions-filter-count`).text("123");
+			newButton.appendTo('div.profile-questions-filters-inner');
+		}
+	});
 }
 
 
