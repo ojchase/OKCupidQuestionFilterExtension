@@ -6,6 +6,9 @@ window.hasRunOKCupidQuestionFilterExtensionFilter = true;
   
 console.log("Script is running");
 let currentFilter = undefined;
+let currentQuestionsInFilter = undefined;
+let currentQuestionsNotInFilter = undefined;
+
 let questionCategoryPromise = browser.runtime.sendMessage({
 	"queryType": "GetQuestionCategories"
 });
@@ -74,9 +77,7 @@ function manipulateQuestionElements(){
 	if(!currentFilter){
 		return;
 	}
-	const questionsInCategoryPromise = getQuestionsInCategory(currentFilter);
-	const questionsNotInCategoryPromise = getQuestionsNotInCategory(currentFilter);
-	Promise.all([questionsInCategoryPromise, questionsNotInCategoryPromise]).then(function([questionsInCategory, questionsNotInCategory]){
+	Promise.all([currentQuestionsInFilter, currentQuestionsNotInFilter]).then(function([questionsInCategory, questionsNotInCategory]){
 		jq('div.profile-question').each(function(index){
 			showOrHideQuestion(jq(this), questionsInCategory); // when jq.each is run, it calls the callback and sets the 'this' context when running to the DOM item
 		});
@@ -118,6 +119,9 @@ function createFilterButtons(questionCategoryPromise) {
 function applyFilter(category){
 	alert(`Applying filter ${category}`);
 	currentFilter = category;
+	currentQuestionsInFilter = getQuestionsInCategory(category);
+	currentQuestionsNotInFilter = getQuestionsNotInCategory(category);
+	
 	manipulateQuestionElements();
 	// TODO signal graphically on filter panel
 }
