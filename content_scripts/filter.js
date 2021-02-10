@@ -5,6 +5,7 @@ if (window.hasRunOKCupidQuestionFilterExtensionFilter) {
 window.hasRunOKCupidQuestionFilterExtensionFilter = true;
   
 console.log("Script is running");
+let currentFilter = undefined;
 let questionCategoryPromise = browser.runtime.sendMessage({
 	"queryType": "GetQuestionCategories"
 });
@@ -69,6 +70,14 @@ function isPageLoaded(selector){
 
 function manipulateQuestionElements(){
 	addBorders();
+	
+	const questionsInCategoryPromise = getQuestionsInCategory(currentFilter);
+	const questionsNotInCategoryPromise = getQuestionsNotInCategory(currentFilter);
+	Promise.all([questionsInCategoryPromise, questionsNotInCategoryPromise]).then(function([questionsInCategory, questionsNotInCategory]){
+		jq('div.profile-question').each(function(index){
+			showOrHideQuestion(jq(this), questionsInCategory); // when jq.each is run, it calls the callback and sets the 'this' context when running to the DOM item
+		});
+	});
 }
 
 function addBorders(){
@@ -105,11 +114,9 @@ function createFilterButtons(questionCategoryPromise) {
 
 function applyFilter(category){
 	alert(`Applying filter ${category}`);
-	getQuestionsInCategory(category).then(function(questions){
-		jq('div.profile-question').each(function(index){
-			showOrHideQuestion(jq(this), questions); // when jq.each is run, it calls the callback and sets the 'this' context when running to the DOM item
-		});
-	});
+	currentFilter = category;
+	manipulateQuestionElements();
+	// TODO signal graphically on filter panel
 }
 
 function showOrHideQuestion(thisQuestion, questionsToShow){
