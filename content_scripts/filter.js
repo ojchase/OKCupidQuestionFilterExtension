@@ -71,6 +71,9 @@ function isPageLoaded(selector){
 function manipulateQuestionElements(){
 	addBorders();
 	
+	if(!currentFilter){
+		return;
+	}
 	const questionsInCategoryPromise = getQuestionsInCategory(currentFilter);
 	const questionsNotInCategoryPromise = getQuestionsNotInCategory(currentFilter);
 	Promise.all([questionsInCategoryPromise, questionsNotInCategoryPromise]).then(function([questionsInCategory, questionsNotInCategory]){
