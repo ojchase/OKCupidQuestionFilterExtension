@@ -130,5 +130,13 @@ function getQuestionsInCategory(category){
 	return questionsInCategoryPromise.catch(logFailureResponse).then(logSuccessResponse);
 }
 
+function getQuestionsNotInCategory(category){
+	let questionsInCategoryPromise = browser.runtime.sendMessage({
+		"queryType": "GetQuestionsNotInCategory",
+		"category": category
+	});
+	return questionsInCategoryPromise.catch(logFailureResponse).then(logSuccessResponse);
+}
+
 
 })();

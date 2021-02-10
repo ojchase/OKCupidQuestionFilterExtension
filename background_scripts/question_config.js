@@ -22,6 +22,11 @@ function listenForRequests(request, sender, sendResponse){
 			return getQuestionTextsByCategoryAndValue(questions, request.category, "TRUE");
 		});
 	}
+	else if(request.queryType === "GetQuestionsNotInCategory"){
+		return questions.then(function(questions){
+			return getQuestionTextsByCategoryAndValue(questions, request.category, "FALSE");
+		});
+	}
 	else{
 		console.warn(`Unrecognized request: ${request}`);
 	}
