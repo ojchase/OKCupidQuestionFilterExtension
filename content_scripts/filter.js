@@ -95,18 +95,31 @@ function createFilterButtons(questionCategoryPromise) {
 			newButton.children(`.profile-questions-filter-title`).text(category);
 			newButton.children(`.profile-questions-filter-icon`).remove();
 			newButton.children(`.profile-questions-filter-count`).text("123");
-			newButton.click(function(){
-				getQuestionsInCategory(category).then(function(questions){
-					jq('div.profile-question').hide();
-					for(const desiredQuestion of questions){
-						console.log(desiredQuestion);
-						jq(`div.profile-question:has(button.profile-question-content:has(h3:contains("${desiredQuestion}")))`).show();
-					}
-				});
+			newButton.click(() => {
+				applyFilter(category);
 			});
 			newButton.appendTo('div.profile-questions-filters-inner');
 		}
 	});
+}
+
+function applyFilter(category){
+	alert(`Applying filter ${category}`);
+	getQuestionsInCategory(category).then(function(questions){
+		jq('div.profile-question').each(function(index){
+			showOrHideQuestion(jq(this), questions); // when jq.each is run, it calls the callback and sets the 'this' context when running to the DOM item
+		});
+	});
+}
+
+function showOrHideQuestion(thisQuestion, questionsToShow){
+	const questionText = thisQuestion.find('h3').text();
+	if(questionsToShow.includes(questionText)){
+		thisQuestion.show();
+	}
+	else{
+		thisQuestion.hide();
+	}
 }
 
 function getQuestionsInCategory(category){
