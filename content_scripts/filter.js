@@ -32,8 +32,9 @@ function manipulatePage(questionCategoryPromise){
 		listenForQuestionListUpdates();
 		createFilterButtons(questionCategoryPromise);
 		manipulateQuestionElements();
-	}).catch(() => {
+	}).catch((e) => {
 		console.log("It's not loaded!")
+		console.log(e);
 	});
 }
 
@@ -72,16 +73,57 @@ function isPageLoaded(selector){
 }
 
 function manipulateQuestionElements(){
-	addBorder(jq(`div.profile-question`), 'blue');
-	
 	if(!currentFilter){
+		manipulateDefaultBehaviorQuestion(jq(`div.profile-question`));
 		return;
 	}
 	Promise.all([currentQuestionsInFilter, currentQuestionsNotInFilter]).then(function([questionsInCategory, questionsNotInCategory]){
 		jq('div.profile-question').each(function(index){
-			showOrHideQuestion(jq(this), questionsInCategory); // when jq.each is run, it calls the callback and sets the 'this' context when running to the DOM item
+			const thisQuestion = jq(this) // when jq.each is run, it calls the callback and sets the 'this' context when running to the DOM item
+			const isLoaded = !thisQuestion.hasClass('isLoading');
+			if(!isLoaded){
+				manipulateLoadingQuestion(thisQuestion);
+				return;
+			}
+			
+			const questionText = thisQuestion.find('h3').text();
+			const isUnwantedQuestion = questionsNotInCategory.includes(questionText);
+			const isWantedQuestion = questionsInCategory.includes(questionText);
+			if(isWantedQuestion){
+				manipulateDesiredQuestion(thisQuestion);
+			}
+			else if(isUnwantedQuestion){
+				manipulateUndesiredQuestion(thisQuestion);
+			}
+			else{ // isUndecidedQuestion
+				manipulateUndecidedQuestion(thisQuestion);
+			}
 		});
 	});
+}
+
+function manipulateDefaultBehaviorQuestion(questionElement){
+	questionElement.show();
+	addBorder(questionElement, 'black');
+}
+
+function manipulateLoadingQuestion(questionElement){
+	questionElement.show();
+	addBorder(questionElement, 'green');
+}
+
+function manipulateDesiredQuestion(questionElement){
+	questionElement.show();
+	addBorder(questionElement, 'blue');
+}
+
+function manipulateUndesiredQuestion(questionElement){
+	questionElement.hide();
+}
+
+function manipulateUndecidedQuestion(questionElement){
+	questionElement.show();
+	addBorder(questionElement, 'red');
 }
 
 function addBorder(questionElement, color){
@@ -123,21 +165,6 @@ function applyFilter(category){
 	currentQuestionsNotInFilter = getQuestionsNotInCategory(category);
 	
 	manipulateQuestionElements();
-	// TODO signal graphically on filter panel
-}
-
-function showOrHideQuestion(thisQuestion, questionsToShow){
-	if(thisQuestion.hasClass('isLoading')){
-		thisQuestion.show();
-		return;
-	}
-	const questionText = thisQuestion.find('h3').text();
-	if(questionsToShow.includes(questionText)){
-		thisQuestion.show();
-	}
-	else{
-		thisQuestion.hide();
-	}
 }
 
 function getQuestionsInCategory(category){
