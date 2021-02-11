@@ -124,10 +124,45 @@ function manipulateUndesiredQuestion(questionElement){
 function manipulateUndecidedQuestion(questionElement){
 	questionElement.show();
 	addBorder(questionElement, 'red');
+	addCategorizationButtons(questionElement);
 }
 
 function addBorder(questionElement, color){
 	questionElement.css('border', `3px solid ${color}`)
+}
+
+function addCategorizationButtons(questionElement){
+	const instructions = `Is this a ${currentFilter} question?`;
+	const instructionsElement = `<span><h4>${instructions}</h4></span>`;
+	
+	const showClass = 'showButton';
+	const hideClass = 'hideButton';
+	const inFilterButton = `<button class="${showClass}"><span>Show</span></button>`;
+	const notInFilterButton = `<button class="${hideClass}"><span>Hide</span></button>`;
+	
+	questionElement.append(instructionsElement);
+	questionElement.append(inFilterButton);
+	questionElement.append(notInFilterButton);
+	
+	const inFilterButtonElement = questionElement.children(`.${showClass}`);
+	const notInFilterButtonElement = questionElement.children(`.${hideClass}`);
+	
+	inFilterButtonElement.click(() => {
+		questionBelongsInFilter(questionElement);
+	});
+	notInFilterButtonElement.click(() => {
+		questionDoesNotBelongInFilter(questionElement);
+	});
+}
+
+function questionBelongsInFilter(thisQuestion){
+	const questionText = thisQuestion.find('h3').text();
+	alert(`This question (${questionText}) will be shown with this filter`);
+}
+
+function questionDoesNotBelongInFilter(thisQuestion){
+	const questionText = thisQuestion.find('h3').text();
+	alert(`This question (${questionText}) will be hidden with this filter`);
 }
 
 function listenForQuestionListUpdates(){
