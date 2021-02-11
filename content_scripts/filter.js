@@ -72,7 +72,7 @@ function isPageLoaded(selector){
 }
 
 function manipulateQuestionElements(){
-	addBorders();
+	addBorder(jq(`div.profile-question`), 'blue');
 	
 	if(!currentFilter){
 		return;
@@ -84,8 +84,8 @@ function manipulateQuestionElements(){
 	});
 }
 
-function addBorders(){
-	jq(`div.profile-question`).css('border', '3px solid blue')
+function addBorder(questionElement, color){
+	questionElement.css('border', `3px solid ${color}`)
 }
 
 function listenForQuestionListUpdates(){
