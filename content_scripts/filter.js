@@ -127,6 +127,10 @@ function applyFilter(category){
 }
 
 function showOrHideQuestion(thisQuestion, questionsToShow){
+	if(thisQuestion.hasClass('isLoading')){
+		thisQuestion.show();
+		return;
+	}
 	const questionText = thisQuestion.find('h3').text();
 	if(questionsToShow.includes(questionText)){
 		thisQuestion.show();
