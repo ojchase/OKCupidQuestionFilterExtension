@@ -139,7 +139,7 @@ function addBorder(questionElement, color){
 }
 
 function addCategorizationButtons(questionElement){
-	if(questionElement.find('.filterInstructions').length > 0){
+	if(questionElement.find('.questionCategorization').length > 0){
 		return;
 	}
 	const instructions = `Is this a ${currentFilter} question?`;
@@ -150,12 +150,11 @@ function addCategorizationButtons(questionElement){
 	const inFilterButton = `<button class="${showClass}"><span>Show</span></button>`;
 	const notInFilterButton = `<button class="${hideClass}"><span>Hide</span></button>`;
 	
-	questionElement.append(instructionsElement);
-	questionElement.append(inFilterButton);
-	questionElement.append(notInFilterButton);
+	const categorizationDiv = `<div class="questionCategorization">${instructionsElement}${inFilterButton}${notInFilterButton}</div>`;
+	questionElement.append(categorizationDiv);
 	
-	const inFilterButtonElement = questionElement.children(`.${showClass}`);
-	const notInFilterButtonElement = questionElement.children(`.${hideClass}`);
+	const inFilterButtonElement = questionElement.find(`.${showClass}`);
+	const notInFilterButtonElement = questionElement.find(`.${hideClass}`);
 	
 	inFilterButtonElement.click(() => {
 		questionBelongsInFilter(questionElement);
@@ -171,6 +170,7 @@ function questionBelongsInFilter(thisQuestion){
 		questionObject = getQuestionByText(questions, questionText);
 		questionObject[currentFilter] = "TRUE";
 		saveQuestions(questions);
+		thisQuestion.find('.questionCategorization').remove();
 		manipulateQuestionElements();
 	});
 }
