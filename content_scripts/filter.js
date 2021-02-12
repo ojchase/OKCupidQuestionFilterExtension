@@ -131,8 +131,11 @@ function addBorder(questionElement, color){
 }
 
 function addCategorizationButtons(questionElement){
+	if(questionElement.find('.filterInstructions').length > 0){
+		return;
+	}
 	const instructions = `Is this a ${currentFilter} question?`;
-	const instructionsElement = `<span><h4>${instructions}</h4></span>`;
+	const instructionsElement = `<span class="filterInstructions"><h4>${instructions}</h4></span>`;
 	
 	const showClass = 'showButton';
 	const hideClass = 'hideButton';
