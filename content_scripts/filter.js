@@ -124,6 +124,14 @@ function manipulateUndecidedQuestion(questionElement){
 	questionElement.show();
 	addBorder(questionElement, 'red');
 	addCategorizationButtons(questionElement);
+	
+	questionsPromise.then(function(questions){
+		const questionText = questionElement.find('h3').text();
+		if(!isQuestionDefined(questions, questionText)){
+			addQuestion(questions, questionText);
+			saveQuestions(questions);
+		}
+	});
 }
 
 function addBorder(questionElement, color){
@@ -228,6 +236,16 @@ function getQuestionsNotInCategory(category){
 function getQuestionTextsByCategoryAndValue(questions, category, value){
 	return questions.filter(q => q[category] === value)
 		.map(q => q.QuestionText);
+}
+
+function isQuestionDefined(questions, questionText){
+	return getQuestionByText(questions, questionText) !== undefined;
+}
+
+function addQuestion(questions, questionText){
+	let newQuestion = {};
+	newQuestion["QuestionText"] = questionText;
+	questions.push(newQuestion);
 }
 
 function saveQuestions(questions){
