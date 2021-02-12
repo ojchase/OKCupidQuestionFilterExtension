@@ -6,8 +6,7 @@ window.hasRunOKCupidQuestionFilterExtensionFilter = true;
   
 console.log("Script is running");
 let currentFilter = undefined;
-let currentQuestionsInFilter = undefined;
-let currentQuestionsNotInFilter = undefined;
+let questionsPromise = getQuestions();
 
 let questionCategoryPromise = browser.runtime.sendMessage({
 	"queryType": "GetQuestionCategories"
@@ -77,7 +76,7 @@ function manipulateQuestionElements(){
 		manipulateDefaultBehaviorQuestion(jq(`div.profile-question`));
 		return;
 	}
-	Promise.all([currentQuestionsInFilter, currentQuestionsNotInFilter]).then(function([questionsInCategory, questionsNotInCategory]){
+	Promise.all([getQuestionsInCategory(currentFilter), getQuestionsNotInCategory(currentFilter)]).then(function([questionsInCategory, questionsNotInCategory]){
 		jq('div.profile-question').each(function(index){
 			const thisQuestion = jq(this) // when jq.each is run, it calls the callback and sets the 'this' context when running to the DOM item
 			const isLoaded = !thisQuestion.hasClass('isLoading');
@@ -196,26 +195,36 @@ function createFilterButtons(questionCategoryPromise) {
 function applyFilter(category){
 	alert(`Applying filter ${category}`);
 	currentFilter = category;
-	currentQuestionsInFilter = getQuestionsInCategory(category);
-	currentQuestionsNotInFilter = getQuestionsNotInCategory(category);
 	
 	manipulateQuestionElements();
 }
 
-function getQuestionsInCategory(category){
-	let questionsInCategoryPromise = browser.runtime.sendMessage({
-		"queryType": "GetQuestionsInCategory",
-		"category": category
+function getQuestions(){
+	let questionsPromise = browser.runtime.sendMessage({
+		"queryType": "GetQuestions"
 	});
-	return questionsInCategoryPromise.catch(logFailureResponse).then(logSuccessResponse);
+	return questionsPromise.catch(logFailureResponse).then(logSuccessResponse);
+}
+
+function getQuestionByText(questions, text){
+	return questions.find(q => q.QuestionText === text);
+}
+
+function getQuestionsInCategory(category){
+	return questionsPromise.then(function(questions){
+		return getQuestionTextsByCategoryAndValue(questions, category, "TRUE");
+	});
 }
 
 function getQuestionsNotInCategory(category){
-	let questionsInCategoryPromise = browser.runtime.sendMessage({
-		"queryType": "GetQuestionsNotInCategory",
-		"category": category
+	return questionsPromise.then(function(questions){
+		return getQuestionTextsByCategoryAndValue(questions, category, "FALSE");
 	});
-	return questionsInCategoryPromise.catch(logFailureResponse).then(logSuccessResponse);
+}
+
+function getQuestionTextsByCategoryAndValue(questions, category, value){
+	return questions.filter(q => q[category] === value)
+		.map(q => q.QuestionText);
 }
 
 

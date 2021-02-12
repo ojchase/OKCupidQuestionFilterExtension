@@ -1,5 +1,4 @@
-listener = listenForRequests;
-browser.runtime.onMessage.addListener(listener);
+browser.runtime.onMessage.addListener(listenForRequests);
 let allQuestionData = readQuestionConfig();
 let questionCategories = allQuestionData.then(function(headerAndQuestions){
 	return headerAndQuestions.questionCategories;
@@ -17,15 +16,8 @@ function listenForRequests(request, sender, sendResponse){
 	if(request.queryType === "GetQuestionCategories"){
 		return questionCategories.then((categories) => categories.slice(1)); // async responses are supposed to be a promise for the data in question
 	}
-	else if(request.queryType === "GetQuestionsInCategory"){
-		return questions.then(function(questions){
-			return getQuestionTextsByCategoryAndValue(questions, request.category, "TRUE");
-		});
-	}
-	else if(request.queryType === "GetQuestionsNotInCategory"){
-		return questions.then(function(questions){
-			return getQuestionTextsByCategoryAndValue(questions, request.category, "FALSE");
-		});
+	else if(request.queryType === "GetQuestions"){
+		return questions;
 	}
 	else{
 		console.warn(`Unrecognized request: ${request}`);
@@ -49,15 +41,6 @@ function readQuestionConfig(){
 				questions: papaParsedObject.data
 			}
 		});
-}
-
-function getQuestionByText(questions, text){
-	return questions.find(q => q.QuestionText === text);
-}
-
-function getQuestionTextsByCategoryAndValue(questions, category, value){
-	return questions.filter(q => q[category] === value)
-		.map(q => q.QuestionText);
 }
 
 function createQuestion(question, category, value){
