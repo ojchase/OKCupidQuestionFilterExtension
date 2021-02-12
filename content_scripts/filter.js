@@ -167,12 +167,22 @@ function addCategorizationButtons(questionElement){
 
 function questionBelongsInFilter(thisQuestion){
 	const questionText = thisQuestion.find('h3').text();
-	alert(`This question (${questionText}) will be shown with this filter`);
+	questionsPromise.then(function(questions){ // already resolved if you got here
+		questionObject = getQuestionByText(questions, questionText);
+		questionObject[currentFilter] = "TRUE";
+		saveQuestions(questions);
+		manipulateQuestionElements();
+	});
 }
 
 function questionDoesNotBelongInFilter(thisQuestion){
 	const questionText = thisQuestion.find('h3').text();
-	alert(`This question (${questionText}) will be hidden with this filter`);
+	questionsPromise.then(function(questions){ // already resolved if you got here
+		questionObject = getQuestionByText(questions, questionText);
+		questionObject[currentFilter] = "FALSE";
+		saveQuestions(questions);
+		manipulateQuestionElements();
+	});
 }
 
 function listenForQuestionListUpdates(){
