@@ -19,6 +19,10 @@ function listenForRequests(request, sender, sendResponse){
 	else if(request.queryType === "GetQuestions"){
 		return questions;
 	}
+	else if(request.queryType === "SaveQuestions"){
+		questions = Promise.resolve(request.updatedQuestions);
+		saveQuestions();
+	}
 	else{
 		console.warn(`Unrecognized request: ${request}`);
 	}
@@ -50,11 +54,13 @@ function createQuestion(question, category, value){
 	return newQuestion;
 }
 
-function saveQuestions(questionCategories, questions){
-	let csvString = Papa.unparse({
-		fields: questionCategories,
-		data: questions
-	},{headers: true});
-	console.log("New file:")
-	console.log(csvString);
+function saveQuestions(){
+	return Promise.all([questionCategories, questions]).then(function([headers, data]){
+		let csvString = Papa.unparse({
+			fields: headers,
+			data: data
+		},{headers: true});
+		console.log("New file:")
+		console.log(csvString);
+	});
 }

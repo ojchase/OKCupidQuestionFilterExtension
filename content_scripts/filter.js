@@ -230,5 +230,12 @@ function getQuestionTextsByCategoryAndValue(questions, category, value){
 		.map(q => q.QuestionText);
 }
 
+function saveQuestions(questions){
+	let savePromise = browser.runtime.sendMessage({
+		"queryType": "SaveQuestions",
+		"updatedQuestions": questions
+	});
+	return savePromise.catch(logFailureResponse).then(logSuccessResponse);
+}
 
 })();
