@@ -26,7 +26,7 @@
 	"content_scripts": [
 		{
 			"matches": ["*://*.okcupid.com/*", "*://okcupid.com/*"],
-			"js": ["lib/jquery-3.5.1.min.js", "lib/papaparse.min.js", "content_scripts/filter.js"]
+			"js": ["lib/jquery-3.5.1.min.js", "lib/papaparse.min.js", "lib/underscore-min.js", "content_scripts/filter.js"]
 		}
 	],
 
