@@ -34,17 +34,22 @@ function getFilePath(fileName){
 
 // Returns a Promise<{questionCategories: string[], questions: object[]}>
 function readQuestionConfig(){
-	let filePath = getFilePath("question_data.csv");
-	return fetch(filePath)
-		.then(response => response.text())
-		.then((text) => {
-			let papaParsedObject = Papa.parse(text, {header: true, skipEmptyLines: true});
-			let headers = papaParsedObject.meta.fields;
-			return {
-				questionCategories: headers,
-				questions: papaParsedObject.data
-			}
-		});
+	return browser.storage.local.get("questionCsv").then(function(questionCsv){
+		if(questionCsv && !jQuery.isEmptyObject(questionCsv)){
+			return Promise.resolve(questionCsv);
+		}
+		else{
+			let filePath = getFilePath("question_data.csv");
+			return fetch(filePath).then(response => response.text());
+		}
+	}).then((text) => {
+		let papaParsedObject = Papa.parse(text, {header: true, skipEmptyLines: true});
+		let headers = papaParsedObject.meta.fields;
+		return {
+			questionCategories: headers,
+			questions: papaParsedObject.data
+		}
+	});
 }
 
 function createQuestion(question, category, value){
@@ -62,5 +67,14 @@ function saveQuestions(){
 		},{headers: true});
 		console.log("New file:")
 		console.log(csvString);
+		return csvString;
+	}).then(function(output){
+		browser.storage.local.set({
+			questionCsv: output
+		});
+	}).then(function(){
+		console.log("Success!");
+	}).catch(function(err){
+		console.log(`Error: ${err}`);
 	});
 }

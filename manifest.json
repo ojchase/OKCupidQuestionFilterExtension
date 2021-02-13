@@ -10,7 +10,8 @@
 	},
 
 	"permissions": [
-		"activeTab"
+		"activeTab",
+		"storage"
 	],
 
 	"background": {
@@ -32,6 +33,12 @@
 
 	"web_accessible_resources": [
 		"question_data.csv"
-	]
+	],
+	
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "{97c0e2b1-0537-4be5-bddd-8098772b0e90}"
+		}
+	}
 
 }
