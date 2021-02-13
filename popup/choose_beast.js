@@ -16,10 +16,12 @@ function listenForClicks() {
      */
     function beastify(tabs) {
       let selectedFilter = e.target.textContent;
-      browser.tabs.sendMessage(tabs[0].id, {
+      alert(`Category selected: ${selectedFilter}`);
+      // kept as a how-to reminder. I might want add/remove categories to affect the page.
+      /*browser.tabs.sendMessage(tabs[0].id, {
         command: "beastify",
         beastURL: selectedFilter
-      });
+      });*/
     }
 
     /**
@@ -27,9 +29,10 @@ function listenForClicks() {
      * send a "reset" message to the content script in the active tab.
      */
     function reset(tabs) {
-      browser.tabs.sendMessage(tabs[0].id, {
+      /*browser.tabs.sendMessage(tabs[0].id, {
         command: "reset",
-      });
+      });*/
+	  alert("No op");
     }
 
     /**
@@ -71,5 +74,7 @@ bad = function(response){
 }
 listenForClicks();
 browser.runtime.onMessage.addListener(listener);
-let sent = browser.runtime.sendMessage("GetQuestionCategories");
+let sent = browser.runtime.sendMessage({
+	"queryType": "GetQuestionCategories"
+});
 sent.then(good, bad);
