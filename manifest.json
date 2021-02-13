@@ -10,7 +10,8 @@
 	},
 
 	"permissions": [
-		"activeTab"
+		"activeTab",
+		"storage"
 	],
 
 	"background": {
@@ -26,12 +27,18 @@
 	"content_scripts": [
 		{
 			"matches": ["*://*.okcupid.com/*", "*://okcupid.com/*"],
-			"js": ["lib/jquery-3.5.1.min.js", "lib/papaparse.min.js", "content_scripts/filter.js"]
+			"js": ["lib/jquery-3.5.1.min.js", "lib/papaparse.min.js", "lib/underscore-min.js", "content_scripts/filter.js"]
 		}
 	],
 
 	"web_accessible_resources": [
 		"question_data.csv"
-	]
+	],
+	
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "{97c0e2b1-0537-4be5-bddd-8098772b0e90}"
+		}
+	}
 
 }

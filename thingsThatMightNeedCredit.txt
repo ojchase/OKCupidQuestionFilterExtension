@@ -4,4 +4,4 @@ Will need attribution if I ever do anything with this.
 
 
 
-I am also copying in jquery and PapaParse. Both are under the MIT license. If I understand correctly, as long as I don't touch the copyright headers in the files, I'm free to do what I want with them.
+I am also copying in jquery, PapaParse and underscore. All are under the MIT license. If I understand correctly, as long as I don't touch the copyright headers in the files, I'm free to do what I want with them.

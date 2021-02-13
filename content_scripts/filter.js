@@ -5,6 +5,9 @@ if (window.hasRunOKCupidQuestionFilterExtensionFilter) {
 window.hasRunOKCupidQuestionFilterExtensionFilter = true;
   
 console.log("Script is running");
+let currentFilter = undefined;
+let questionsPromise = getQuestions();
+
 let questionCategoryPromise = browser.runtime.sendMessage({
 	"queryType": "GetQuestionCategories"
 });
@@ -28,8 +31,9 @@ function manipulatePage(questionCategoryPromise){
 		listenForQuestionListUpdates();
 		createFilterButtons(questionCategoryPromise);
 		manipulateQuestionElements();
-	}).catch(() => {
+	}).catch((e) => {
 		console.log("It's not loaded!")
+		console.log(e);
 	});
 }
 
@@ -68,11 +72,117 @@ function isPageLoaded(selector){
 }
 
 function manipulateQuestionElements(){
-	addBorders();
+	if(!currentFilter){
+		manipulateDefaultBehaviorQuestion(jq(`div.profile-question`));
+		return;
+	}
+	Promise.all([getQuestionsInCategory(currentFilter), getQuestionsNotInCategory(currentFilter)]).then(function([questionsInCategory, questionsNotInCategory]){
+		jq('div.profile-question').each(function(index){
+			const thisQuestion = jq(this) // when jq.each is run, it calls the callback and sets the 'this' context when running to the DOM item
+			const isLoaded = !thisQuestion.hasClass('isLoading');
+			if(!isLoaded){
+				manipulateLoadingQuestion(thisQuestion);
+				return;
+			}
+			
+			const questionText = thisQuestion.find('h3').text();
+			const isUnwantedQuestion = questionsNotInCategory.includes(questionText);
+			const isWantedQuestion = questionsInCategory.includes(questionText);
+			if(isWantedQuestion){
+				manipulateDesiredQuestion(thisQuestion);
+			}
+			else if(isUnwantedQuestion){
+				manipulateUndesiredQuestion(thisQuestion);
+			}
+			else{ // isUndecidedQuestion
+				manipulateUndecidedQuestion(thisQuestion);
+			}
+		});
+	});
 }
 
-function addBorders(){
-	jq(`div.profile-question`).css('border', '3px solid blue')
+function manipulateDefaultBehaviorQuestion(questionElement){
+	questionElement.show();
+	addBorder(questionElement, 'black');
+}
+
+function manipulateLoadingQuestion(questionElement){
+	questionElement.show();
+	addBorder(questionElement, 'green');
+}
+
+function manipulateDesiredQuestion(questionElement){
+	questionElement.show();
+	addBorder(questionElement, 'blue');
+}
+
+function manipulateUndesiredQuestion(questionElement){
+	questionElement.hide();
+}
+
+function manipulateUndecidedQuestion(questionElement){
+	questionElement.show();
+	addBorder(questionElement, 'red');
+	addCategorizationButtons(questionElement);
+	
+	questionsPromise.then(function(questions){
+		const questionText = questionElement.find('h3').text();
+		if(!isQuestionDefined(questions, questionText)){
+			addQuestion(questions, questionText);
+			saveQuestions(questions);
+		}
+	});
+}
+
+function addBorder(questionElement, color){
+	questionElement.css('border', `3px solid ${color}`)
+}
+
+function addCategorizationButtons(questionElement){
+	if(questionElement.find('.questionCategorization').length > 0){
+		return;
+	}
+	const instructions = `Is this a ${currentFilter} question?`;
+	const instructionsElement = `<span class="filterInstructions"><h4>${instructions}</h4></span>`;
+	
+	const showClass = 'showButton';
+	const hideClass = 'hideButton';
+	const inFilterButton = `<button class="${showClass}"><span>Show</span></button>`;
+	const notInFilterButton = `<button class="${hideClass}"><span>Hide</span></button>`;
+	
+	const categorizationDiv = `<div class="questionCategorization">${instructionsElement}${inFilterButton}${notInFilterButton}</div>`;
+	questionElement.append(categorizationDiv);
+	
+	const inFilterButtonElement = questionElement.find(`.${showClass}`);
+	const notInFilterButtonElement = questionElement.find(`.${hideClass}`);
+	
+	inFilterButtonElement.click(() => {
+		questionBelongsInFilter(questionElement);
+	});
+	notInFilterButtonElement.click(() => {
+		questionDoesNotBelongInFilter(questionElement);
+	});
+}
+
+function questionBelongsInFilter(thisQuestion){
+	const questionText = thisQuestion.find('h3').text();
+	questionsPromise.then(function(questions){ // already resolved if you got here
+		questionObject = getQuestionByText(questions, questionText);
+		questionObject[currentFilter] = "TRUE";
+		saveQuestions(questions);
+		thisQuestion.find('.questionCategorization').remove();
+		manipulateQuestionElements();
+	});
+}
+
+function questionDoesNotBelongInFilter(thisQuestion){
+	const questionText = thisQuestion.find('h3').text();
+	questionsPromise.then(function(questions){ // already resolved if you got here
+		questionObject = getQuestionByText(questions, questionText);
+		questionObject[currentFilter] = "FALSE";
+		saveQuestions(questions);
+		manipulateQuestionElements();
+	});
 }
 
 function listenForQuestionListUpdates(){
@@ -95,27 +205,65 @@ function createFilterButtons(questionCategoryPromise) {
 			newButton.children(`.profile-questions-filter-title`).text(category);
 			newButton.children(`.profile-questions-filter-icon`).remove();
 			newButton.children(`.profile-questions-filter-count`).text("123");
-			newButton.click(function(){
-				getQuestionsInCategory(category).then(function(questions){
-					jq('div.profile-question').hide();
-					for(const desiredQuestion of questions){
-						console.log(desiredQuestion);
-						jq(`div.profile-question:has(button.profile-question-content:has(h3:contains("${desiredQuestion}")))`).show();
-					}
-				});
+			newButton.click(() => {
+				applyFilter(category);
 			});
 			newButton.appendTo('div.profile-questions-filters-inner');
 		}
 	});
 }
 
-function getQuestionsInCategory(category){
-	let questionsInCategoryPromise = browser.runtime.sendMessage({
-		"queryType": "GetQuestionsInCategory",
-		"category": category
-	});
-	return questionsInCategoryPromise.catch(logFailureResponse).then(logSuccessResponse);
+function applyFilter(category){
+	alert(`Applying filter ${category}`);
+	currentFilter = category;
+	
+	manipulateQuestionElements();
 }
 
+function getQuestions(){
+	let questionsPromise = browser.runtime.sendMessage({
+		"queryType": "GetQuestions"
+	});
+	return questionsPromise.catch(logFailureResponse).then(logSuccessResponse);
+}
+
+function getQuestionByText(questions, text){
+	return questions.find(q => q.QuestionText === text);
+}
+
+function getQuestionsInCategory(category){
+	return questionsPromise.then(function(questions){
+		return getQuestionTextsByCategoryAndValue(questions, category, "TRUE");
+	});
+}
+
+function getQuestionsNotInCategory(category){
+	return questionsPromise.then(function(questions){
+		return getQuestionTextsByCategoryAndValue(questions, category, "FALSE");
+	});
+}
+
+function getQuestionTextsByCategoryAndValue(questions, category, value){
+	return questions.filter(q => q[category] === value)
+		.map(q => q.QuestionText);
+}
+
+function isQuestionDefined(questions, questionText){
+	return getQuestionByText(questions, questionText) !== undefined;
+}
+
+function addQuestion(questions, questionText){
+	let newQuestion = {};
+	newQuestion["QuestionText"] = questionText;
+	questions.push(newQuestion);
+}
+
+const saveQuestions = _.debounce(function(questions) {
+	let savePromise = browser.runtime.sendMessage({
+		"queryType": "SaveQuestions",
+		"updatedQuestions": questions
+	});
+	return savePromise.catch(logFailureResponse).then(logSuccessResponse);
+}, 5000);
 
 })();
