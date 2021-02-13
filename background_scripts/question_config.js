@@ -6,11 +6,6 @@ let questionCategories = allQuestionData.then(function(headerAndQuestions){
 let questions = allQuestionData.then(function(headerAndQuestions){
 	return headerAndQuestions.questions;
 });
-//let newQuestion = createQuestion("This is a test question", "Spiritual", "FALSE");
-Promise.all([questionCategories, questions]).then(function([questionCategories, questions]){
-	//questions.push(newQuestion);
-	//saveQuestions(questionCategories, questions);
-});
 
 function listenForRequests(request, sender, sendResponse){
 	if(request.queryType === "GetQuestionCategories"){
@@ -52,29 +47,20 @@ function readQuestionConfig(){
 	});
 }
 
-function createQuestion(question, category, value){
-	let newQuestion = {};
-	newQuestion["QuestionText"] = question;
-	newQuestion[category] = value;
-	return newQuestion;
-}
-
 function saveQuestions(){
 	return Promise.all([questionCategories, questions]).then(function([headers, data]){
 		let csvString = Papa.unparse({
 			fields: headers,
 			data: data
 		},{headers: true});
-		console.log("New file:")
-		console.log(csvString);
 		return csvString;
 	}).then(function(output){
 		browser.storage.local.set({
 			questionCsv: output
 		});
 	}).then(function(){
-		console.log("Success!");
+		console.log("Question config saved to local storage");
 	}).catch(function(err){
-		console.log(`Error: ${err}`);
+		console.log(`Error saving question config to local storage: ${err}`);
 	});
 }
