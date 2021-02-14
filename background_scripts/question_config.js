@@ -18,7 +18,14 @@ function listenForRequests(request, sender, sendResponse){
 }
 
 function getCategoriesInQuestions(questions){
-	return ["This", "is", "a", "Test"];
+	let categories = new Set();
+	for(const q of questions){
+		for(const category in q){
+			categories.add(category);
+		}
+	}
+	categories.delete("QuestionText");
+	return categories;
 }
 
 function readQuestionConfig(){
