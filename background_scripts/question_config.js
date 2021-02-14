@@ -1,6 +1,5 @@
 browser.runtime.onMessage.addListener(listenForRequests);
 let questionsPromise = readQuestionConfig();
-questionsPromise.then(saveQuestions);
 
 function listenForRequests(request, sender, sendResponse){
 	if(request.queryType === "GetQuestionCategories"){
@@ -23,32 +22,19 @@ function getCategoriesInQuestions(questions){
 }
 
 function readQuestionConfig(){
-	console.log("Attempting to read question config");
 	return browser.storage.local.get("questions").then(function(questionObject){
-		console.log("Got something from browser storage");
-		console.log(questionObject);
-		console.log(questionObject.questions);
 		if(questionObject && !jQuery.isEmptyObject(questionObject)){
-			console.log("That will be the answer");
 			return questionObject.questions;
 		}
 		else{
-			console.log("Creating new item instead");
-			return [{
-				QuestionText: "How do you feel about kids?",
-				Spiritual: false
-			},{
-				QuestionText: "What's your deal with harder drugs (stuff beyond pot)?",
-				Spiritual: false
-			}];
+			console.log("No saved question filtering information. Creating an empty configuration.");
+			return [];
 		}
 	});
 }
 
 function saveQuestions(){
 	return questionsPromise.then(function(questions){
-		console.log("saving questions");
-		console.log(questions);
 		browser.storage.local.set({
 			questions
 		});
