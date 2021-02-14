@@ -198,19 +198,47 @@ function listenForQuestionListUpdates(){
 function createFilterButtons(questionCategoryPromise) {
 	questionCategoryPromise.then(function(categories){
 		for(const category of categories){
-			let newButton = jq('button.profile-questions-filter')
-				.not('button.profile-questions-filter--isActive')
-				.first()
-				.clone();
-			newButton.children(`.profile-questions-filter-title`).text(category);
-			newButton.children(`.profile-questions-filter-icon`).remove();
-			newButton.children(`.profile-questions-filter-count`).text("123");
-			newButton.click(() => {
-				applyFilter(category);
-			});
-			newButton.appendTo('div.profile-questions-filters-inner');
+			addFilterButton(category, 123);
 		}
+		addNewFilterButton();
 	});
+}
+
+function addFilterButton(category, count){
+	let newButton = createButton(category, count);
+	newButton.click(() => {
+		applyFilter(category);
+	});
+	addButton(newButton);
+}
+
+function createButton(title, count){
+	let newButton = jq('button.profile-questions-filter')
+		.not('button.profile-questions-filter--isActive')
+		.first()
+		.clone();
+	newButton.children(`.profile-questions-filter-title`).text(title);
+	newButton.children(`.profile-questions-filter-icon`).remove();
+	if(!count){
+		count = "";
+	}
+	newButton.children(`.profile-questions-filter-count`).text(`${count}`);
+	return newButton;
+}
+
+function addButton(button){
+	button.appendTo('div.profile-questions-filters-inner');
+}
+
+function addNewFilterButton(){
+	let newFilterButton = createButton("Add new filter");
+	newFilterButton.click(() => {
+		 var newFilterName = prompt("Enter the name of the new filter");
+		 if(newFilterName){
+			 addFilterButton(newFilterName, 0);
+		 }
+	});
+	addButton(newFilterButton);
 }
 
 function applyFilter(category){
