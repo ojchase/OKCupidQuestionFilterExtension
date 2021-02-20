@@ -244,8 +244,22 @@ function addNewFilterButton(){
 function applyFilter(category){
 	alert(`Applying filter ${category}`);
 	currentFilter = category;
+	deselectCategoriesVisually();
+	selectCategoryVisually(currentFilter);
 	
 	manipulateQuestionElements();
+}
+
+function deselectCategoriesVisually(){
+	jq('button.profile-questions-filter').removeClass('profile-questions-filter--isActive');
+}
+
+function selectCategoryVisually(category){
+	let selectedButton = jq('button.profile-questions-filter').filter(function() {
+		console.log(jq(this));
+		return jq(this).children(`.profile-questions-filter-title`).first().text() == category;
+	})
+	selectedButton.addClass('profile-questions-filter--isActive');
 }
 
 function getQuestions(){
