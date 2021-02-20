@@ -217,6 +217,7 @@ function createButton(title, count){
 		.not('button.profile-questions-filter--isActive')
 		.first()
 		.clone();
+	newButton.addClass('user-defined-filter');
 	newButton.children(`.profile-questions-filter-title`).text(title);
 	newButton.children(`.profile-questions-filter-icon`).remove();
 	if(!count){
@@ -251,7 +252,7 @@ function applyFilter(category){
 }
 
 function deselectCategoriesVisually(){
-	jq('button.profile-questions-filter').removeClass('profile-questions-filter--isActive');
+	jq('button.profile-questions-filter.user-defined-filter').removeClass('profile-questions-filter--isActive');
 }
 
 function selectCategoryVisually(category){
