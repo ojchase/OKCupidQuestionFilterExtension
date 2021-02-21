@@ -202,20 +202,20 @@ function listenForQuestionListUpdates(){
 
 function createFilterButtons() {
 	for(const category of questionCategories){
-		addFilterButton(category, 123);
+		addFilterButton(category);
 	}
 	addNewFilterButton();
 }
 
-function addFilterButton(category, count){
-	let newButton = createButton(category, count);
+function addFilterButton(category){
+	let newButton = createButton(category);
 	newButton.click(() => {
 		applyFilter(category);
 	});
 	addButton(newButton);
 }
 
-function createButton(title, count){
+function createButton(title){
 	let newButton = jq('button.profile-questions-filter')
 		.not('button.profile-questions-filter--isActive')
 		.first()
@@ -223,10 +223,7 @@ function createButton(title, count){
 	newButton.addClass('user-defined-filter');
 	newButton.children(`.profile-questions-filter-title`).text(title);
 	newButton.children(`.profile-questions-filter-icon`).remove();
-	if(!count){
-		count = "";
-	}
-	newButton.children(`.profile-questions-filter-count`).text(`${count}`);
+	newButton.children(`.profile-questions-filter-count`).text("");
 	return newButton;
 }
 
@@ -267,9 +264,11 @@ function addNewFilterButton(){
 	newFilterButton.click(() => {
 		 var newFilterName = prompt("Enter the name of the new filter");
 		 if(newFilterName){
-			 addFilterButton(newFilterName, 0);
+			addFilterButton(newFilterName);
+			manipulateQuestionElements();
 		 }
 	});
+	newFilterButton.removeClass('user-defined-filter');
 	addButton(newFilterButton);
 }
 
