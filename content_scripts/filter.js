@@ -268,6 +268,7 @@ function addNewFilterButton(){
 			manipulateQuestionElements();
 		 }
 	});
+	newFilterButton.removeClass('user-defined-filter');
 	addButton(newFilterButton);
 }
 
