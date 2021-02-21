@@ -82,6 +82,7 @@ function isPageLoaded(selector){
 }
 
 function manipulateQuestionElements(){
+	updateFilterCounts();
 	if(!currentFilter){
 		manipulateDefaultBehaviorQuestion(jq(`div.profile-question`));
 		return;
@@ -229,6 +230,29 @@ function createButton(title, count){
 	return newButton;
 }
 
+function updateFilterCounts(){
+	jq('button.profile-questions-filter.user-defined-filter').each(function(index){
+		const thisFilter = jq(this);
+		const filterName = thisFilter.children('span.profile-questions-filter-title').first().text();
+		const questionsInCategory = getQuestionsInCategory(filterName);
+		const questionsThatCurrentlyMatch = getNumberOfLoadedQuestionsInCategory(questionsInCategory);
+		const numUnloaded = getNumberOfUnloadedQuestionsFromUser();
+		
+		let result;
+		if(numUnloaded === -1){
+			result = `${questionsThatCurrentlyMatch}+`;
+		}
+		else if(numUnloaded === 0){
+			result = `${questionsThatCurrentlyMatch}`;
+		}
+		else{
+			let possible = questionsThatCurrentlyMatch + numUnloaded;
+			result = `${questionsThatCurrentlyMatch}-${possible}`;
+		}
+		thisFilter.children(`.profile-questions-filter-count`).text(`${result}`);
+	});
+}
+
 function addButton(button){
 	button.appendTo('div.profile-questions-filters-inner');
 }
@@ -262,6 +286,46 @@ function selectCategoryVisually(category){
 		return jq(this).children(`.profile-questions-filter-title`).first().text() == category;
 	})
 	selectedButton.addClass('profile-questions-filter--isActive');
+}
+
+// Agree/Disagree/Find Out - whichever is selected. If none are selected, -1. 
+// (This is probably because the url was changed to have a filter_id that's not 9, 10, or 11. We don't know how many questions are coming.
+function getNumberOfQuestionsInSelectedDefaultFilter(){
+	let countElements = jq('button.profile-questions-filter--isActive')
+		.not('button.user-defined-filter')
+		.children('span.profile-questions-filter-count');
+	if(countElements.length > 0){
+		return countElements.first().text();
+	}
+	else{
+		return -1;
+	}
+}
+
+// Number of questions that would be on screen if the extension weren't present
+function getNumberOfLoadedQuestionsFromUser(){
+	return jq('div.profile-question').length;
+}
+
+// Number of questions that are still offscreen. -1 if we don't know the size of the current default filter.
+function getNumberOfUnloadedQuestionsFromUser(){
+	let totalOnPage = getNumberOfQuestionsInSelectedDefaultFilter();
+	if(totalOnPage === -1){
+		return -1;
+	}
+	return totalOnPage - getNumberOfLoadedQuestionsFromUser();
+}
+
+function getNumberOfLoadedQuestionsInCategory(questionsInCategory){
+	let count = 0;
+	jq('div.profile-question').each(function(index){
+		const thisQuestion = jq(this);
+		const questionText = thisQuestion.find('h3').text();
+		if(questionsInCategory.includes(questionText)){
+			count += 1;
+		}
+	});
+	return count;
 }
 
 function getQuestions(){
