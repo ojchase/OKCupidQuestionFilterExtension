@@ -6,14 +6,12 @@ window.hasRunOKCupidQuestionFilterExtensionFilter = true;
   
 console.log("Script is running");
 let currentFilter = undefined;
-let questionsPromise = getQuestions();
-
-let questionCategoryPromise = browser.runtime.sendMessage({
-	"queryType": "GetQuestionCategories"
-});
-questionCategoryPromise.then(logSuccessResponse).catch(logFailureResponse);
+let questions;
+let questionCategories;
 var jq = jQuery.noConflict();
-jq(document).ready(() => {manipulatePage(questionCategoryPromise);});
+jq(document).ready(() => {
+	manipulatePage();
+});
 
 function logSuccessResponse(response){
 	console.log("Content script got a response!");
@@ -25,11 +23,23 @@ function logFailureResponse(response){
 	console.log(response);
 }
 
-function manipulatePage(questionCategoryPromise){
+function manipulatePage(){
 	document.body.style.border = "5px solid red";
-	waitForPageToLoad('.page-loading, .isLoading').then(() => {
+	
+	let questionsPromise = getQuestions();
+	let questionCategoryPromise = browser.runtime.sendMessage({
+		"queryType": "GetQuestionCategories"
+	});
+	questionCategoryPromise.then(logSuccessResponse).catch(logFailureResponse);
+	let pageLoadedPromise = waitForPageToLoad('.page-loading, .isLoading');
+	
+	Promise.all([questionsPromise, questionCategoryPromise, pageLoadedPromise]).then(function([theQuestions, theCategories]){
+		questions = theQuestions;
+		questionCategories = theCategories;
+		
+		document.body.style.border = "5px solid blue";
 		listenForQuestionListUpdates();
-		createFilterButtons(questionCategoryPromise);
+		createFilterButtons();
 		manipulateQuestionElements();
 	}).catch((e) => {
 		console.log("It's not loaded!")
@@ -76,28 +86,29 @@ function manipulateQuestionElements(){
 		manipulateDefaultBehaviorQuestion(jq(`div.profile-question`));
 		return;
 	}
-	Promise.all([getQuestionsInCategory(currentFilter), getQuestionsNotInCategory(currentFilter)]).then(function([questionsInCategory, questionsNotInCategory]){
-		jq('div.profile-question').each(function(index){
-			const thisQuestion = jq(this) // when jq.each is run, it calls the callback and sets the 'this' context when running to the DOM item
-			const isLoaded = !thisQuestion.hasClass('isLoading');
-			if(!isLoaded){
-				manipulateLoadingQuestion(thisQuestion);
-				return;
-			}
-			
-			const questionText = thisQuestion.find('h3').text();
-			const isUnwantedQuestion = questionsNotInCategory.includes(questionText);
-			const isWantedQuestion = questionsInCategory.includes(questionText);
-			if(isWantedQuestion){
-				manipulateDesiredQuestion(thisQuestion);
-			}
-			else if(isUnwantedQuestion){
-				manipulateUndesiredQuestion(thisQuestion);
-			}
-			else{ // isUndecidedQuestion
-				manipulateUndecidedQuestion(thisQuestion);
-			}
-		});
+	
+	let questionsInCategory = getQuestionsInCategory(currentFilter);
+	let questionsNotInCategory = getQuestionsNotInCategory(currentFilter);
+	jq('div.profile-question').each(function(index){
+		const thisQuestion = jq(this) // when jq.each is run, it calls the callback and sets the 'this' context when running to the DOM item
+		const isLoaded = !thisQuestion.hasClass('isLoading');
+		if(!isLoaded){
+			manipulateLoadingQuestion(thisQuestion);
+			return;
+		}
+		
+		const questionText = thisQuestion.find('h3').text();
+		const isUnwantedQuestion = questionsNotInCategory.includes(questionText);
+		const isWantedQuestion = questionsInCategory.includes(questionText);
+		if(isWantedQuestion){
+			manipulateDesiredQuestion(thisQuestion);
+		}
+		else if(isUnwantedQuestion){
+			manipulateUndesiredQuestion(thisQuestion);
+		}
+		else{ // isUndecidedQuestion
+			manipulateUndecidedQuestion(thisQuestion);
+		}
 	});
 }
 
@@ -125,13 +136,11 @@ function manipulateUndecidedQuestion(questionElement){
 	addBorder(questionElement, 'red');
 	addCategorizationButtons(questionElement);
 	
-	questionsPromise.then(function(questions){
-		const questionText = questionElement.find('h3').text();
-		if(!isQuestionDefined(questions, questionText)){
-			addQuestion(questions, questionText);
-			saveQuestions(questions);
-		}
-	});
+	const questionText = questionElement.find('h3').text();
+	if(!isQuestionDefined(questions, questionText)){
+		addQuestion(questions, questionText);
+		saveQuestions(questions);
+	}
 }
 
 function addBorder(questionElement, color){
@@ -165,23 +174,19 @@ function addCategorizationButtons(questionElement){
 
 function questionBelongsInFilter(thisQuestion){
 	const questionText = thisQuestion.find('h3').text();
-	questionsPromise.then(function(questions){ // already resolved if you got here
-		questionObject = getQuestionByText(questions, questionText);
-		questionObject[currentFilter] = "TRUE";
-		saveQuestions(questions);
-		thisQuestion.find('.questionCategorization').remove();
-		manipulateQuestionElements();
-	});
+	questionObject = getQuestionByText(questions, questionText);
+	questionObject[currentFilter] = "TRUE";
+	saveQuestions(questions);
+	thisQuestion.find('.questionCategorization').remove();
+	manipulateQuestionElements();
 }
 
 function questionDoesNotBelongInFilter(thisQuestion){
 	const questionText = thisQuestion.find('h3').text();
-	questionsPromise.then(function(questions){ // already resolved if you got here
-		questionObject = getQuestionByText(questions, questionText);
-		questionObject[currentFilter] = "FALSE";
-		saveQuestions(questions);
-		manipulateQuestionElements();
-	});
+	questionObject = getQuestionByText(questions, questionText);
+	questionObject[currentFilter] = "FALSE";
+	saveQuestions(questions);
+	manipulateQuestionElements();
 }
 
 function listenForQuestionListUpdates(){
@@ -194,13 +199,11 @@ function listenForQuestionListUpdates(){
 	observer.observe(target, config);
 }
 
-function createFilterButtons(questionCategoryPromise) {
-	questionCategoryPromise.then(function(categories){
-		for(const category of categories){
-			addFilterButton(category, 123);
-		}
-		addNewFilterButton();
-	});
+function createFilterButtons() {
+	for(const category of questionCategories){
+		addFilterButton(category, 123);
+	}
+	addNewFilterButton();
 }
 
 function addFilterButton(category, count){
@@ -274,15 +277,11 @@ function getQuestionByText(questions, text){
 }
 
 function getQuestionsInCategory(category){
-	return questionsPromise.then(function(questions){
-		return getQuestionTextsByCategoryAndValue(questions, category, "TRUE");
-	});
+	return getQuestionTextsByCategoryAndValue(questions, category, "TRUE");
 }
 
 function getQuestionsNotInCategory(category){
-	return questionsPromise.then(function(questions){
-		return getQuestionTextsByCategoryAndValue(questions, category, "FALSE");
-	});
+	return getQuestionTextsByCategoryAndValue(questions, category, "FALSE");
 }
 
 function getQuestionTextsByCategoryAndValue(questions, category, value){
