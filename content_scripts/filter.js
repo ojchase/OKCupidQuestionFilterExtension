@@ -265,6 +265,7 @@ function addNewFilterButton(){
 		 var newFilterName = prompt("Enter the name of the new filter");
 		 if(newFilterName){
 			addFilterButton(newFilterName);
+			manipulateQuestionElements();
 		 }
 	});
 	addButton(newFilterButton);
