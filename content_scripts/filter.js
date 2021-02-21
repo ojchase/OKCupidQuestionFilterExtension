@@ -259,7 +259,6 @@ function deselectCategoriesVisually(){
 
 function selectCategoryVisually(category){
 	let selectedButton = jq('button.profile-questions-filter').filter(function() {
-		console.log(jq(this));
 		return jq(this).children(`.profile-questions-filter-title`).first().text() == category;
 	})
 	selectedButton.addClass('profile-questions-filter--isActive');
