@@ -236,18 +236,23 @@ function updateFilterCounts(){
 		const filterName = thisFilter.children('span.profile-questions-filter-title').first().text();
 		const questionsInCategory = getQuestionsInCategory(filterName);
 		const questionsThatCurrentlyMatch = getNumberOfLoadedQuestionsInCategory(questionsInCategory);
+		const questionsUndecidedInCategory = getQuestionsWithCategoryUndecided(filterName);
+		const questionsThatCurrentlyMightMatch = getNumberOfLoadedQuestionsInCategory(questionsUndecidedInCategory);
 		const numUnloaded = getNumberOfUnloadedQuestionsFromUser();
 		
+		let possible = questionsThatCurrentlyMatch + questionsThatCurrentlyMightMatch;
 		let result;
 		if(numUnloaded === -1){
 			result = `${questionsThatCurrentlyMatch}+`;
 		}
-		else if(numUnloaded === 0){
-			result = `${questionsThatCurrentlyMatch}`;
-		}
-		else{
-			let possible = questionsThatCurrentlyMatch + numUnloaded;
-			result = `${questionsThatCurrentlyMatch}-${possible}`;
+		else {
+			possible += numUnloaded;
+			if(questionsThatCurrentlyMatch === possible){
+				result = `${questionsThatCurrentlyMatch}`;
+			}
+			else{
+				result = `${questionsThatCurrentlyMatch}-${possible}`;
+			}
 		}
 		thisFilter.children(`.profile-questions-filter-count`).text(`${result}`);
 	});
@@ -350,6 +355,12 @@ function getQuestionsNotInCategory(category){
 function getQuestionTextsByCategoryAndValue(questions, category, value){
 	return questions.filter(q => q[category] === value)
 		.map(q => q.QuestionText);
+}
+
+function getQuestionsWithCategoryUndecided(category){
+	return questions.filter(function(q){
+		return !(category in q);
+	}).map(q => q.QuestionText);
 }
 
 function isQuestionDefined(questions, questionText){
