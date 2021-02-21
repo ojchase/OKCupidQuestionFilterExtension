@@ -6,14 +6,12 @@ window.hasRunOKCupidQuestionFilterExtensionFilter = true;
   
 console.log("Script is running");
 let currentFilter = undefined;
-let questionsPromise = getQuestions();
-
-let questionCategoryPromise = browser.runtime.sendMessage({
-	"queryType": "GetQuestionCategories"
-});
-questionCategoryPromise.then(logSuccessResponse).catch(logFailureResponse);
+let questions;
+let questionCategories;
 var jq = jQuery.noConflict();
-jq(document).ready(() => {manipulatePage(questionCategoryPromise);});
+jq(document).ready(() => {
+	manipulatePage();
+});
 
 function logSuccessResponse(response){
 	console.log("Content script got a response!");
@@ -25,11 +23,23 @@ function logFailureResponse(response){
 	console.log(response);
 }
 
-function manipulatePage(questionCategoryPromise){
+function manipulatePage(){
 	document.body.style.border = "5px solid red";
-	waitForPageToLoad('.page-loading, .isLoading').then(() => {
+	
+	let questionsPromise = getQuestions();
+	let questionCategoryPromise = browser.runtime.sendMessage({
+		"queryType": "GetQuestionCategories"
+	});
+	questionCategoryPromise.then(logSuccessResponse).catch(logFailureResponse);
+	let pageLoadedPromise = waitForPageToLoad('.page-loading, .isLoading');
+	
+	Promise.all([questionsPromise, questionCategoryPromise, pageLoadedPromise]).then(function([theQuestions, theCategories]){
+		questions = theQuestions;
+		questionCategories = theCategories;
+		
+		document.body.style.border = "5px solid blue";
 		listenForQuestionListUpdates();
-		createFilterButtons(questionCategoryPromise);
+		createFilterButtons();
 		manipulateQuestionElements();
 	}).catch((e) => {
 		console.log("It's not loaded!")
@@ -72,32 +82,34 @@ function isPageLoaded(selector){
 }
 
 function manipulateQuestionElements(){
+	updateFilterCounts();
 	if(!currentFilter){
 		manipulateDefaultBehaviorQuestion(jq(`div.profile-question`));
 		return;
 	}
-	Promise.all([getQuestionsInCategory(currentFilter), getQuestionsNotInCategory(currentFilter)]).then(function([questionsInCategory, questionsNotInCategory]){
-		jq('div.profile-question').each(function(index){
-			const thisQuestion = jq(this) // when jq.each is run, it calls the callback and sets the 'this' context when running to the DOM item
-			const isLoaded = !thisQuestion.hasClass('isLoading');
-			if(!isLoaded){
-				manipulateLoadingQuestion(thisQuestion);
-				return;
-			}
-			
-			const questionText = thisQuestion.find('h3').text();
-			const isUnwantedQuestion = questionsNotInCategory.includes(questionText);
-			const isWantedQuestion = questionsInCategory.includes(questionText);
-			if(isWantedQuestion){
-				manipulateDesiredQuestion(thisQuestion);
-			}
-			else if(isUnwantedQuestion){
-				manipulateUndesiredQuestion(thisQuestion);
-			}
-			else{ // isUndecidedQuestion
-				manipulateUndecidedQuestion(thisQuestion);
-			}
-		});
+	
+	let questionsInCategory = getQuestionsInCategory(currentFilter);
+	let questionsNotInCategory = getQuestionsNotInCategory(currentFilter);
+	jq('div.profile-question').each(function(index){
+		const thisQuestion = jq(this) // when jq.each is run, it calls the callback and sets the 'this' context when running to the DOM item
+		const isLoaded = !thisQuestion.hasClass('isLoading');
+		if(!isLoaded){
+			manipulateLoadingQuestion(thisQuestion);
+			return;
+		}
+		
+		const questionText = thisQuestion.find('h3').text();
+		const isUnwantedQuestion = questionsNotInCategory.includes(questionText);
+		const isWantedQuestion = questionsInCategory.includes(questionText);
+		if(isWantedQuestion){
+			manipulateDesiredQuestion(thisQuestion);
+		}
+		else if(isUnwantedQuestion){
+			manipulateUndesiredQuestion(thisQuestion);
+		}
+		else{ // isUndecidedQuestion
+			manipulateUndecidedQuestion(thisQuestion);
+		}
 	});
 }
 
@@ -125,13 +137,11 @@ function manipulateUndecidedQuestion(questionElement){
 	addBorder(questionElement, 'red');
 	addCategorizationButtons(questionElement);
 	
-	questionsPromise.then(function(questions){
-		const questionText = questionElement.find('h3').text();
-		if(!isQuestionDefined(questions, questionText)){
-			addQuestion(questions, questionText);
-			saveQuestions(questions);
-		}
-	});
+	const questionText = questionElement.find('h3').text();
+	if(!isQuestionDefined(questions, questionText)){
+		addQuestion(questions, questionText);
+		saveQuestions(questions);
+	}
 }
 
 function addBorder(questionElement, color){
@@ -165,23 +175,19 @@ function addCategorizationButtons(questionElement){
 
 function questionBelongsInFilter(thisQuestion){
 	const questionText = thisQuestion.find('h3').text();
-	questionsPromise.then(function(questions){ // already resolved if you got here
-		questionObject = getQuestionByText(questions, questionText);
-		questionObject[currentFilter] = "TRUE";
-		saveQuestions(questions);
-		thisQuestion.find('.questionCategorization').remove();
-		manipulateQuestionElements();
-	});
+	questionObject = getQuestionByText(questions, questionText);
+	questionObject[currentFilter] = "TRUE";
+	saveQuestions(questions);
+	thisQuestion.find('.questionCategorization').remove();
+	manipulateQuestionElements();
 }
 
 function questionDoesNotBelongInFilter(thisQuestion){
 	const questionText = thisQuestion.find('h3').text();
-	questionsPromise.then(function(questions){ // already resolved if you got here
-		questionObject = getQuestionByText(questions, questionText);
-		questionObject[currentFilter] = "FALSE";
-		saveQuestions(questions);
-		manipulateQuestionElements();
-	});
+	questionObject = getQuestionByText(questions, questionText);
+	questionObject[currentFilter] = "FALSE";
+	saveQuestions(questions);
+	manipulateQuestionElements();
 }
 
 function listenForQuestionListUpdates(){
@@ -194,13 +200,11 @@ function listenForQuestionListUpdates(){
 	observer.observe(target, config);
 }
 
-function createFilterButtons(questionCategoryPromise) {
-	questionCategoryPromise.then(function(categories){
-		for(const category of categories){
-			addFilterButton(category, 123);
-		}
-		addNewFilterButton();
-	});
+function createFilterButtons() {
+	for(const category of questionCategories){
+		addFilterButton(category, 123);
+	}
+	addNewFilterButton();
 }
 
 function addFilterButton(category, count){
@@ -224,6 +228,34 @@ function createButton(title, count){
 	}
 	newButton.children(`.profile-questions-filter-count`).text(`${count}`);
 	return newButton;
+}
+
+function updateFilterCounts(){
+	jq('button.profile-questions-filter.user-defined-filter').each(function(index){
+		const thisFilter = jq(this);
+		const filterName = thisFilter.children('span.profile-questions-filter-title').first().text();
+		const questionsInCategory = getQuestionsInCategory(filterName);
+		const questionsThatCurrentlyMatch = getNumberOfLoadedQuestionsInCategory(questionsInCategory);
+		const questionsUndecidedInCategory = getQuestionsWithCategoryUndecided(filterName);
+		const questionsThatCurrentlyMightMatch = getNumberOfLoadedQuestionsInCategory(questionsUndecidedInCategory);
+		const numUnloaded = getNumberOfUnloadedQuestionsFromUser();
+		
+		let possible = questionsThatCurrentlyMatch + questionsThatCurrentlyMightMatch;
+		let result;
+		if(numUnloaded === -1){
+			result = `${questionsThatCurrentlyMatch}+`;
+		}
+		else {
+			possible += numUnloaded;
+			if(questionsThatCurrentlyMatch === possible){
+				result = `${questionsThatCurrentlyMatch}`;
+			}
+			else{
+				result = `${questionsThatCurrentlyMatch}-${possible}`;
+			}
+		}
+		thisFilter.children(`.profile-questions-filter-count`).text(`${result}`);
+	});
 }
 
 function addButton(button){
@@ -256,10 +288,49 @@ function deselectCategoriesVisually(){
 
 function selectCategoryVisually(category){
 	let selectedButton = jq('button.profile-questions-filter').filter(function() {
-		console.log(jq(this));
 		return jq(this).children(`.profile-questions-filter-title`).first().text() == category;
 	})
 	selectedButton.addClass('profile-questions-filter--isActive');
+}
+
+// Agree/Disagree/Find Out - whichever is selected. If none are selected, -1. 
+// (This is probably because the url was changed to have a filter_id that's not 9, 10, or 11. We don't know how many questions are coming.
+function getNumberOfQuestionsInSelectedDefaultFilter(){
+	let countElements = jq('button.profile-questions-filter--isActive')
+		.not('button.user-defined-filter')
+		.children('span.profile-questions-filter-count');
+	if(countElements.length > 0){
+		return countElements.first().text();
+	}
+	else{
+		return -1;
+	}
+}
+
+// Number of questions that would be on screen if the extension weren't present
+function getNumberOfLoadedQuestionsFromUser(){
+	return jq('div.profile-question').length;
+}
+
+// Number of questions that are still offscreen. -1 if we don't know the size of the current default filter.
+function getNumberOfUnloadedQuestionsFromUser(){
+	let totalOnPage = getNumberOfQuestionsInSelectedDefaultFilter();
+	if(totalOnPage === -1){
+		return -1;
+	}
+	return totalOnPage - getNumberOfLoadedQuestionsFromUser();
+}
+
+function getNumberOfLoadedQuestionsInCategory(questionsInCategory){
+	let count = 0;
+	jq('div.profile-question').each(function(index){
+		const thisQuestion = jq(this);
+		const questionText = thisQuestion.find('h3').text();
+		if(questionsInCategory.includes(questionText)){
+			count += 1;
+		}
+	});
+	return count;
 }
 
 function getQuestions(){
@@ -274,20 +345,22 @@ function getQuestionByText(questions, text){
 }
 
 function getQuestionsInCategory(category){
-	return questionsPromise.then(function(questions){
-		return getQuestionTextsByCategoryAndValue(questions, category, "TRUE");
-	});
+	return getQuestionTextsByCategoryAndValue(questions, category, "TRUE");
 }
 
 function getQuestionsNotInCategory(category){
-	return questionsPromise.then(function(questions){
-		return getQuestionTextsByCategoryAndValue(questions, category, "FALSE");
-	});
+	return getQuestionTextsByCategoryAndValue(questions, category, "FALSE");
 }
 
 function getQuestionTextsByCategoryAndValue(questions, category, value){
 	return questions.filter(q => q[category] === value)
 		.map(q => q.QuestionText);
+}
+
+function getQuestionsWithCategoryUndecided(category){
+	return questions.filter(function(q){
+		return !(category in q);
+	}).map(q => q.QuestionText);
 }
 
 function isQuestionDefined(questions, questionText){
