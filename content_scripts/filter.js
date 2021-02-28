@@ -287,15 +287,18 @@ function addDeleteFilterButton(){
 	deleteFilterButton.click(() => {
 		var deleteFilterName = prompt("Warning: This cannot be reversed and you will lose your filter's configuration! Enter the name of the filter to delete:");
 		if(deleteFilterName){
-			removeFilterButtonFromScreen(deleteFilterName);
+			let $filterElement = findFilterButtonByName(deleteFilterName);
+			if($filterElement.length > 0){
+				let correctlyCasedFilterName = $filterElement.children(`.profile-questions-filter-title`).first().text();
+				removeFilterButtonFromScreen($filterElement);
+			}
 		}
 	});
 	addButton(deleteFilterButton);
 }
 
-function removeFilterButtonFromScreen(deleteFilterName){
-	let $button = findFilterButtonByName(deleteFilterName);
-	$button.remove();
+function removeFilterButtonFromScreen($filterElement){
+	$filterElement.remove();
 }
 
 function applyFilter(category){
