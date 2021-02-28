@@ -213,6 +213,7 @@ function createFilterButtons() {
 		addFilterButton(category);
 	}
 	addNewFilterButton();
+	addDeleteFilterButton();
 }
 
 function addFilterButton(category){
@@ -281,6 +282,22 @@ function addNewFilterButton(){
 	addButton(newFilterButton);
 }
 
+function addDeleteFilterButton(){
+	let deleteFilterButton = createButton("Delete filter", false);
+	deleteFilterButton.click(() => {
+		var deleteFilterName = prompt("Warning: This cannot be reversed and you will lose your filter's configuration! Enter the name of the filter to delete:");
+		if(deleteFilterName){
+			removeFilterButtonFromScreen(deleteFilterName);
+		}
+	});
+	addButton(deleteFilterButton);
+}
+
+function removeFilterButtonFromScreen(deleteFilterName){
+	let $button = findFilterButtonByName(deleteFilterName);
+	$button.remove();
+}
+
 function applyFilter(category){
 	alert(`Applying filter ${category}`);
 	currentFilter = category;
@@ -295,10 +312,15 @@ function deselectCategoriesVisually(){
 }
 
 function selectCategoryVisually(category){
-	let selectedButton = jq('button.profile-questions-filter').filter(function() {
-		return jq(this).children(`.profile-questions-filter-title`).first().text() == category;
-	})
+	let selectedButton = findFilterButtonByName(category);
 	selectedButton.addClass('profile-questions-filter--isActive');
+}
+
+function findFilterButtonByName(filterName){
+	let selectedButton = jq('button.user-defined-filter').filter(function() {
+		return jq(this).children(`.profile-questions-filter-title`).first().text().toUpperCase() == filterName.toUpperCase();
+	})
+	return selectedButton;
 }
 
 // Agree/Disagree/Find Out - whichever is selected. If none are selected, -1. 
