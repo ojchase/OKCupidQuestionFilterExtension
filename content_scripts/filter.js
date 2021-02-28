@@ -114,25 +114,30 @@ function manipulateQuestionElements(){
 }
 
 function manipulateDefaultBehaviorQuestion(questionElement){
+	resetQuestionDisplay(questionElement);
 	questionElement.show();
 	addBorder(questionElement, 'black');
 }
 
 function manipulateLoadingQuestion(questionElement){
+	resetQuestionDisplay(questionElement);
 	questionElement.show();
 	addBorder(questionElement, 'green');
 }
 
 function manipulateDesiredQuestion(questionElement){
+	resetQuestionDisplay(questionElement);
 	questionElement.show();
 	addBorder(questionElement, 'blue');
 }
 
 function manipulateUndesiredQuestion(questionElement){
+	resetQuestionDisplay(questionElement);
 	questionElement.hide();
 }
 
 function manipulateUndecidedQuestion(questionElement){
+	resetQuestionDisplay(questionElement);
 	questionElement.show();
 	addBorder(questionElement, 'red');
 	addCategorizationButtons(questionElement);
@@ -144,12 +149,15 @@ function manipulateUndecidedQuestion(questionElement){
 	}
 }
 
+function resetQuestionDisplay(questionElement){
+	questionElement.find('.questionCategorization').remove();
+}
+
 function addBorder(questionElement, color){
 	questionElement.css('border', `3px solid ${color}`)
 }
 
 function addCategorizationButtons(questionElement){
-	questionElement.find('.questionCategorization').remove();
 	
 	const instructions = `Is this a ${currentFilter} question?`;
 	const instructionsElement = `<span class="filterInstructions"><h4>${instructions}</h4></span>`;
