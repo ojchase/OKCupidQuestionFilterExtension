@@ -228,13 +228,47 @@ function createButton(title, isAFilter){
 		.not('button.profile-questions-filter--isActive')
 		.first()
 		.clone();
-	newButton.children(`.profile-questions-filter-title`).text(title);
+	let $title = newButton.children(`.profile-questions-filter-title`)
+	$title.text(title);
 	newButton.children(`.profile-questions-filter-icon`).remove();
 	newButton.children(`.profile-questions-filter-count`).text("");
 	if(isAFilter){
 		newButton.addClass('user-defined-filter');
+		
+		let filterDeletionElement = createFilterDeletionElement(newButton);
+		filterDeletionElement.insertAfter($title);
 	}
 	return newButton;
+}
+
+function createFilterDeletionElement(filterElement){
+	const filterDeletionClass = 'user-defined-filter-delete';
+	const clickFunction = (() => {
+		const filterName = filterElement.children('.profile-questions-filter-title').first().text();
+		alert(`You clicked ${filterName}`);
+		deleteFilter(filterName);
+		return false; // prevent the parent button's click from running
+	});
+	
+	return jq("<span/>", {
+		"class": filterDeletionClass,
+		text: "(Delete)",
+		on: {
+			click: clickFunction
+		}
+	});
+}
+
+function deleteFilter(filterName){
+	let questionsWithFilterSet = getQuestionsWithCategoryDecided(filterName);
+	/*for(question of questionsWithFilterSet){
+		delete question[filterName];
+	}
+	saveQuestions(questions);*/
+	questionCategories.delete(filterName);
+	alert(`${filterName} removed`);
+	
+	// update filters
 }
 
 function updateFilterCounts(){
@@ -363,6 +397,12 @@ function getQuestionsNotInCategory(category){
 function getQuestionTextsByCategoryAndValue(questions, category, value){
 	return questions.filter(q => q[category] === value)
 		.map(q => q.QuestionText);
+}
+
+function getQuestionsWithCategoryDecided(category){
+	return questions.filter(function(q){
+		return (category in q);
+	}).map(q => q.QuestionText);
 }
 
 function getQuestionsWithCategoryUndecided(category){
