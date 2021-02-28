@@ -292,6 +292,9 @@ function addDeleteFilterButton(){
 				let correctlyCasedFilterName = $filterElement.children(`.profile-questions-filter-title`).first().text();
 				removeFilterButtonFromScreen($filterElement);
 			}
+			else{
+				alert(`Unable to find filter named ${deleteFilterName}`);
+			}
 		}
 	});
 	addButton(deleteFilterButton);
