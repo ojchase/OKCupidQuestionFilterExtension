@@ -291,6 +291,7 @@ function addDeleteFilterButton(){
 			if($filterElement.length > 0){
 				let correctlyCasedFilterName = $filterElement.children(`.profile-questions-filter-title`).first().text();
 				removeFilterButtonFromScreen($filterElement);
+				deleteFilterFromQuestions(correctlyCasedFilterName);
 			}
 			else{
 				alert(`Unable to find filter named ${deleteFilterName}`);
@@ -302,6 +303,18 @@ function addDeleteFilterButton(){
 
 function removeFilterButtonFromScreen($filterElement){
 	$filterElement.remove();
+}
+
+function deleteFilterFromQuestions(filterName){
+	let questionsWithFilterSet = getQuestionObjectsWithCategoryDecided(filterName);
+	if(questionsWithFilterSet.length > 0){
+		for(question of questionsWithFilterSet){
+			delete question[filterName];
+		}
+		saveQuestions(questions);
+		questionCategories.delete(filterName);
+		alert(`The '${filterName}' filter has been deleted`);
+	}
 }
 
 function applyFilter(category){
@@ -391,6 +404,12 @@ function getQuestionsNotInCategory(category){
 function getQuestionTextsByCategoryAndValue(questions, category, value){
 	return questions.filter(q => q[category] === value)
 		.map(q => q.QuestionText);
+}
+
+function getQuestionObjectsWithCategoryDecided(category){
+	return questions.filter(function(q){
+		return (category in q);
+	});
 }
 
 function getQuestionsWithCategoryUndecided(category){
