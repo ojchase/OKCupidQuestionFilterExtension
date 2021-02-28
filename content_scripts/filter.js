@@ -216,22 +216,24 @@ function createFilterButtons() {
 }
 
 function addFilterButton(category){
-	let newButton = createButton(category);
+	let newButton = createButton(category, true);
 	newButton.click(() => {
 		applyFilter(category);
 	});
 	addButton(newButton);
 }
 
-function createButton(title){
+function createButton(title, isAFilter){
 	let newButton = jq('button.profile-questions-filter')
 		.not('button.profile-questions-filter--isActive')
 		.first()
 		.clone();
-	newButton.addClass('user-defined-filter');
 	newButton.children(`.profile-questions-filter-title`).text(title);
 	newButton.children(`.profile-questions-filter-icon`).remove();
 	newButton.children(`.profile-questions-filter-count`).text("");
+	if(isAFilter){
+		newButton.addClass('user-defined-filter');
+	}
 	return newButton;
 }
 
@@ -268,7 +270,7 @@ function addButton(button){
 }
 
 function addNewFilterButton(){
-	let newFilterButton = createButton("Add new filter");
+	let newFilterButton = createButton("Add new filter", false);
 	newFilterButton.click(() => {
 		 var newFilterName = prompt("Enter the name of the new filter");
 		 if(newFilterName){
@@ -276,7 +278,6 @@ function addNewFilterButton(){
 			manipulateQuestionElements();
 		 }
 	});
-	newFilterButton.removeClass('user-defined-filter');
 	addButton(newFilterButton);
 }
 
