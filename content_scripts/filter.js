@@ -213,25 +213,28 @@ function createFilterButtons() {
 		addFilterButton(category);
 	}
 	addNewFilterButton();
+	addDeleteFilterButton();
 }
 
 function addFilterButton(category){
-	let newButton = createButton(category);
+	let newButton = createButton(category, true);
 	newButton.click(() => {
 		applyFilter(category);
 	});
 	addButton(newButton);
 }
 
-function createButton(title){
+function createButton(title, isAFilter){
 	let newButton = jq('button.profile-questions-filter')
 		.not('button.profile-questions-filter--isActive')
 		.first()
 		.clone();
-	newButton.addClass('user-defined-filter');
 	newButton.children(`.profile-questions-filter-title`).text(title);
 	newButton.children(`.profile-questions-filter-icon`).remove();
 	newButton.children(`.profile-questions-filter-count`).text("");
+	if(isAFilter){
+		newButton.addClass('user-defined-filter');
+	}
 	return newButton;
 }
 
@@ -268,7 +271,7 @@ function addButton(button){
 }
 
 function addNewFilterButton(){
-	let newFilterButton = createButton("Add new filter");
+	let newFilterButton = createButton("Add new filter", false);
 	newFilterButton.click(() => {
 		 var newFilterName = prompt("Enter the name of the new filter");
 		 if(newFilterName){
@@ -276,8 +279,42 @@ function addNewFilterButton(){
 			manipulateQuestionElements();
 		 }
 	});
-	newFilterButton.removeClass('user-defined-filter');
 	addButton(newFilterButton);
+}
+
+function addDeleteFilterButton(){
+	let deleteFilterButton = createButton("Delete filter", false);
+	deleteFilterButton.click(() => {
+		var deleteFilterName = prompt("Warning: This cannot be reversed and you will lose your filter's configuration! Enter the name of the filter to delete:");
+		if(deleteFilterName){
+			let $filterElement = findFilterButtonByName(deleteFilterName);
+			if($filterElement.length > 0){
+				let correctlyCasedFilterName = $filterElement.children(`.profile-questions-filter-title`).first().text();
+				removeFilterButtonFromScreen($filterElement);
+				deleteFilterFromQuestions(correctlyCasedFilterName);
+			}
+			else{
+				alert(`Unable to find filter named ${deleteFilterName}`);
+			}
+		}
+	});
+	addButton(deleteFilterButton);
+}
+
+function removeFilterButtonFromScreen($filterElement){
+	$filterElement.remove();
+}
+
+function deleteFilterFromQuestions(filterName){
+	let questionsWithFilterSet = getQuestionObjectsWithCategoryDecided(filterName);
+	if(questionsWithFilterSet.length > 0){
+		for(question of questionsWithFilterSet){
+			delete question[filterName];
+		}
+		saveQuestions(questions);
+		questionCategories.delete(filterName);
+		alert(`The '${filterName}' filter has been deleted`);
+	}
 }
 
 function applyFilter(category){
@@ -294,10 +331,15 @@ function deselectCategoriesVisually(){
 }
 
 function selectCategoryVisually(category){
-	let selectedButton = jq('button.profile-questions-filter').filter(function() {
-		return jq(this).children(`.profile-questions-filter-title`).first().text() == category;
-	})
+	let selectedButton = findFilterButtonByName(category);
 	selectedButton.addClass('profile-questions-filter--isActive');
+}
+
+function findFilterButtonByName(filterName){
+	let selectedButton = jq('button.user-defined-filter').filter(function() {
+		return jq(this).children(`.profile-questions-filter-title`).first().text().toUpperCase() == filterName.toUpperCase();
+	})
+	return selectedButton;
 }
 
 // Agree/Disagree/Find Out - whichever is selected. If none are selected, -1. 
@@ -362,6 +404,12 @@ function getQuestionsNotInCategory(category){
 function getQuestionTextsByCategoryAndValue(questions, category, value){
 	return questions.filter(q => q[category] === value)
 		.map(q => q.QuestionText);
+}
+
+function getQuestionObjectsWithCategoryDecided(category){
+	return questions.filter(function(q){
+		return (category in q);
+	});
 }
 
 function getQuestionsWithCategoryUndecided(category){
