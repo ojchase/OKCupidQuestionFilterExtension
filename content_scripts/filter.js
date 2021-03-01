@@ -8,6 +8,7 @@ console.log("Script is running");
 let currentFilter = undefined;
 let questions;
 let questionCategories;
+let inEditMode = false;
 var jq = jQuery.noConflict();
 jq(document).ready(() => {
 	manipulatePage();
@@ -88,67 +89,32 @@ function manipulateQuestionElements(){
 	let questionsNotInCategory = getQuestionsNotInCategory(currentFilter);
 	jq('div.profile-question').each(function(index){
 		const thisQuestion = jq(this) // when jq.each is run, it calls the callback and sets the 'this' context when running to the DOM item
-		if(!currentFilter){
-			manipulateDefaultBehaviorQuestion(thisQuestion);
-			return;
-		}
+		resetQuestionDisplay(thisQuestion);
 		const isLoaded = !thisQuestion.hasClass('isLoading');
 		if(!isLoaded){
-			manipulateLoadingQuestion(thisQuestion);
+			thisQuestion.show();
 			return;
 		}
 		
 		const questionText = thisQuestion.find('h3').text();
 		const isUnwantedQuestion = questionsNotInCategory.includes(questionText);
 		const isWantedQuestion = questionsInCategory.includes(questionText);
-		if(isWantedQuestion){
-			manipulateDesiredQuestion(thisQuestion);
+		const isUndecidedQuestion = !isUnwantedQuestion && !isWantedQuestion;
+		if(inEditMode || isUndecidedQuestion){
+			addCategorizationButtons(thisQuestion);
+			thisQuestion.show();
 		}
 		else if(isUnwantedQuestion){
-			manipulateUndesiredQuestion(thisQuestion);
+			thisQuestion.hide();
 		}
-		else{ // isUndecidedQuestion
-			manipulateUndecidedQuestion(thisQuestion);
+		else{ // isWantedQuestion
+			thisQuestion.show();
 		}
 	});
 }
 
-function manipulateDefaultBehaviorQuestion(questionElement){
-	resetQuestionDisplay(questionElement);
-	questionElement.show();
-	addBorder(questionElement, 'black');
-}
-
-function manipulateLoadingQuestion(questionElement){
-	resetQuestionDisplay(questionElement);
-	questionElement.show();
-	addBorder(questionElement, 'green');
-}
-
-function manipulateDesiredQuestion(questionElement){
-	resetQuestionDisplay(questionElement);
-	questionElement.show();
-	addBorder(questionElement, 'blue');
-}
-
-function manipulateUndesiredQuestion(questionElement){
-	resetQuestionDisplay(questionElement);
-	questionElement.hide();
-}
-
-function manipulateUndecidedQuestion(questionElement){
-	resetQuestionDisplay(questionElement);
-	questionElement.show();
-	addBorder(questionElement, 'red');
-	addCategorizationButtons(questionElement);
-}
-
 function resetQuestionDisplay(questionElement){
 	questionElement.find('.questionCategorization').remove();
-}
-
-function addBorder(questionElement, color){
-	questionElement.css('border', `3px solid ${color}`)
 }
 
 function addCategorizationButtons(questionElement){
@@ -208,6 +174,7 @@ function createFilterButtons() {
 	}
 	addNewFilterButton();
 	addDeleteFilterButton();
+	addEditFilterButton();
 }
 
 function addFilterButton(category){
@@ -311,9 +278,38 @@ function deleteFilterFromQuestions(filterName){
 	}
 }
 
+function addEditFilterButton(){
+	let editFilterButton = createButton("Edit filter", false);
+	editFilterButton.click(() => {
+		var editFilterName = prompt("Which filter would you like to reevaluate?");
+		if(editFilterName){
+			let $filterElement = findFilterButtonByName(editFilterName);
+			if($filterElement.length > 0){
+				let correctlyCasedFilterName = $filterElement.children(`.profile-questions-filter-title`).first().text();
+				editFilter(correctlyCasedFilterName);
+			}
+			else{
+				alert(`Unable to find filter named ${editFilterName}`);
+			}
+		}
+	});
+	addButton(editFilterButton);
+}
+
 function applyFilter(category){
 	alert(`Applying filter ${category}`);
+	inEditMode = false;
 	currentFilter = category;
+	deselectCategoriesVisually();
+	selectCategoryVisually(currentFilter);
+	
+	manipulateQuestionElements();
+}
+
+function editFilter(filterName){
+	alert(`Editing filter ${filterName}`);
+	inEditMode = true;
+	currentFilter = filterName;
 	deselectCategoriesVisually();
 	selectCategoryVisually(currentFilter);
 	
