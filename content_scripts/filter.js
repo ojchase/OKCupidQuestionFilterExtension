@@ -83,15 +83,15 @@ function isPageLoaded(selector){
 
 function manipulateQuestionElements(){
 	updateFilterCounts();
-	if(!currentFilter){
-		manipulateDefaultBehaviorQuestion(jq(`div.profile-question`));
-		return;
-	}
 	
 	let questionsInCategory = getQuestionsInCategory(currentFilter);
 	let questionsNotInCategory = getQuestionsNotInCategory(currentFilter);
 	jq('div.profile-question').each(function(index){
 		const thisQuestion = jq(this) // when jq.each is run, it calls the callback and sets the 'this' context when running to the DOM item
+		if(!currentFilter){
+			manipulateDefaultBehaviorQuestion(thisQuestion);
+			return;
+		}
 		const isLoaded = !thisQuestion.hasClass('isLoading');
 		if(!isLoaded){
 			manipulateLoadingQuestion(thisQuestion);
@@ -393,10 +393,16 @@ function getQuestionByText(questions, text){
 }
 
 function getQuestionsInCategory(category){
+	if(!category){
+		return questions.map(q => q.QuestionText);
+	}
 	return getQuestionTextsByCategoryAndValue(questions, category, "TRUE");
 }
 
 function getQuestionsNotInCategory(category){
+	if(!category){
+		return [];
+	}
 	return getQuestionTextsByCategoryAndValue(questions, category, "FALSE");
 }
 
