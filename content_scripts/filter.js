@@ -102,6 +102,8 @@ function manipulateQuestionElements(){
 		const isUndecidedQuestion = !isUnwantedQuestion && !isWantedQuestion;
 		if(inEditMode || isUndecidedQuestion){
 			addCategorizationButtons(thisQuestion, isWantedQuestion, isUnwantedQuestion);
+			thisQuestion.css('border', `2px dashed gray`)
+
 			thisQuestion.show();
 		}
 		else if(isUnwantedQuestion){
@@ -115,6 +117,7 @@ function manipulateQuestionElements(){
 
 function resetQuestionDisplay(questionElement){
 	questionElement.find('.questionCategorization').remove();
+	questionElement.css('border', ``)
 }
 
 function addCategorizationButtons(questionElement, wanted, unwanted){
