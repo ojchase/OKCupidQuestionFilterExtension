@@ -8,6 +8,7 @@ console.log("Script is running");
 let currentFilter = undefined;
 let questions;
 let questionCategories;
+let inEditMode = false;
 var jq = jQuery.noConflict();
 jq(document).ready(() => {
 	manipulatePage();
@@ -83,81 +84,43 @@ function isPageLoaded(selector){
 
 function manipulateQuestionElements(){
 	updateFilterCounts();
-	if(!currentFilter){
-		manipulateDefaultBehaviorQuestion(jq(`div.profile-question`));
-		return;
-	}
 	
 	let questionsInCategory = getQuestionsInCategory(currentFilter);
 	let questionsNotInCategory = getQuestionsNotInCategory(currentFilter);
 	jq('div.profile-question').each(function(index){
 		const thisQuestion = jq(this) // when jq.each is run, it calls the callback and sets the 'this' context when running to the DOM item
+		resetQuestionDisplay(thisQuestion);
 		const isLoaded = !thisQuestion.hasClass('isLoading');
 		if(!isLoaded){
-			manipulateLoadingQuestion(thisQuestion);
+			thisQuestion.show();
 			return;
 		}
 		
 		const questionText = thisQuestion.find('h3').text();
 		const isUnwantedQuestion = questionsNotInCategory.includes(questionText);
 		const isWantedQuestion = questionsInCategory.includes(questionText);
-		if(isWantedQuestion){
-			manipulateDesiredQuestion(thisQuestion);
+		const isUndecidedQuestion = !isUnwantedQuestion && !isWantedQuestion;
+		if(inEditMode || isUndecidedQuestion){
+			addCategorizationButtons(thisQuestion, isWantedQuestion, isUnwantedQuestion);
+			thisQuestion.css('border', `2px dashed gray`)
+
+			thisQuestion.show();
 		}
 		else if(isUnwantedQuestion){
-			manipulateUndesiredQuestion(thisQuestion);
+			thisQuestion.hide();
 		}
-		else{ // isUndecidedQuestion
-			manipulateUndecidedQuestion(thisQuestion);
+		else{ // isWantedQuestion
+			thisQuestion.show();
 		}
 	});
 }
 
-function manipulateDefaultBehaviorQuestion(questionElement){
-	resetQuestionDisplay(questionElement);
-	questionElement.show();
-	addBorder(questionElement, 'black');
-}
-
-function manipulateLoadingQuestion(questionElement){
-	resetQuestionDisplay(questionElement);
-	questionElement.show();
-	addBorder(questionElement, 'green');
-}
-
-function manipulateDesiredQuestion(questionElement){
-	resetQuestionDisplay(questionElement);
-	questionElement.show();
-	addBorder(questionElement, 'blue');
-}
-
-function manipulateUndesiredQuestion(questionElement){
-	resetQuestionDisplay(questionElement);
-	questionElement.hide();
-}
-
-function manipulateUndecidedQuestion(questionElement){
-	resetQuestionDisplay(questionElement);
-	questionElement.show();
-	addBorder(questionElement, 'red');
-	addCategorizationButtons(questionElement);
-	
-	const questionText = questionElement.find('h3').text();
-	if(!isQuestionDefined(questions, questionText)){
-		addQuestion(questions, questionText);
-		saveQuestions(questions);
-	}
-}
-
 function resetQuestionDisplay(questionElement){
 	questionElement.find('.questionCategorization').remove();
+	questionElement.css('border', ``)
 }
 
-function addBorder(questionElement, color){
-	questionElement.css('border', `3px solid ${color}`)
-}
-
-function addCategorizationButtons(questionElement){
+function addCategorizationButtons(questionElement, wanted, unwanted){
 	
 	const instructions = `Is this a ${currentFilter} question?`;
 	const instructionsElement = `<span class="filterInstructions"><h4>${instructions}</h4></span>`;
@@ -179,6 +142,13 @@ function addCategorizationButtons(questionElement){
 	notInFilterButtonElement.click(() => {
 		questionDoesNotBelongInFilter(questionElement);
 	});
+	
+	if(wanted){
+		notInFilterButtonElement.css('opacity', '0.5');
+	}
+	else if(unwanted){
+		inFilterButtonElement.css('opacity', '0.5');
+	}
 }
 
 function questionBelongsInFilter(thisQuestion){
@@ -214,6 +184,7 @@ function createFilterButtons() {
 	}
 	addNewFilterButton();
 	addDeleteFilterButton();
+	addEditFilterButton();
 }
 
 function addFilterButton(category){
@@ -317,9 +288,38 @@ function deleteFilterFromQuestions(filterName){
 	}
 }
 
+function addEditFilterButton(){
+	let editFilterButton = createButton("Edit filter", false);
+	editFilterButton.click(() => {
+		var editFilterName = prompt("Which filter would you like to reevaluate?");
+		if(editFilterName){
+			let $filterElement = findFilterButtonByName(editFilterName);
+			if($filterElement.length > 0){
+				let correctlyCasedFilterName = $filterElement.children(`.profile-questions-filter-title`).first().text();
+				editFilter(correctlyCasedFilterName);
+			}
+			else{
+				alert(`Unable to find filter named ${editFilterName}`);
+			}
+		}
+	});
+	addButton(editFilterButton);
+}
+
 function applyFilter(category){
 	alert(`Applying filter ${category}`);
+	inEditMode = false;
 	currentFilter = category;
+	deselectCategoriesVisually();
+	selectCategoryVisually(currentFilter);
+	
+	manipulateQuestionElements();
+}
+
+function editFilter(filterName){
+	alert(`Editing filter ${filterName}`);
+	inEditMode = true;
+	currentFilter = filterName;
 	deselectCategoriesVisually();
 	selectCategoryVisually(currentFilter);
 	
@@ -390,14 +390,25 @@ function getQuestions(){
 }
 
 function getQuestionByText(questions, text){
-	return questions.find(q => q.QuestionText === text);
+	let question = questions.find(q => q.QuestionText === text);
+	if(!question){
+		question = addQuestion(questions, text);
+		saveQuestions(questions);
+	}
+	return question;
 }
 
 function getQuestionsInCategory(category){
+	if(!category){
+		return questions.map(q => q.QuestionText);
+	}
 	return getQuestionTextsByCategoryAndValue(questions, category, "TRUE");
 }
 
 function getQuestionsNotInCategory(category){
+	if(!category){
+		return [];
+	}
 	return getQuestionTextsByCategoryAndValue(questions, category, "FALSE");
 }
 
@@ -418,14 +429,11 @@ function getQuestionsWithCategoryUndecided(category){
 	}).map(q => q.QuestionText);
 }
 
-function isQuestionDefined(questions, questionText){
-	return getQuestionByText(questions, questionText) !== undefined;
-}
-
 function addQuestion(questions, questionText){
 	let newQuestion = {};
 	newQuestion["QuestionText"] = questionText;
 	questions.push(newQuestion);
+	return newQuestion;
 }
 
 const saveQuestions = _.debounce(function(questions) {
