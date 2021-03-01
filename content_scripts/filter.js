@@ -141,12 +141,6 @@ function manipulateUndecidedQuestion(questionElement){
 	questionElement.show();
 	addBorder(questionElement, 'red');
 	addCategorizationButtons(questionElement);
-	
-	const questionText = questionElement.find('h3').text();
-	if(!isQuestionDefined(questions, questionText)){
-		addQuestion(questions, questionText);
-		saveQuestions(questions);
-	}
 }
 
 function resetQuestionDisplay(questionElement){
@@ -390,7 +384,12 @@ function getQuestions(){
 }
 
 function getQuestionByText(questions, text){
-	return questions.find(q => q.QuestionText === text);
+	let question = questions.find(q => q.QuestionText === text);
+	if(!question){
+		question = addQuestion(questions, text);
+		saveQuestions(questions);
+	}
+	return question;
 }
 
 function getQuestionsInCategory(category){
@@ -418,14 +417,11 @@ function getQuestionsWithCategoryUndecided(category){
 	}).map(q => q.QuestionText);
 }
 
-function isQuestionDefined(questions, questionText){
-	return getQuestionByText(questions, questionText) !== undefined;
-}
-
 function addQuestion(questions, questionText){
 	let newQuestion = {};
 	newQuestion["QuestionText"] = questionText;
 	questions.push(newQuestion);
+	return newQuestion;
 }
 
 const saveQuestions = _.debounce(function(questions) {
