@@ -101,7 +101,7 @@ function manipulateQuestionElements(){
 		const isWantedQuestion = questionsInCategory.includes(questionText);
 		const isUndecidedQuestion = !isUnwantedQuestion && !isWantedQuestion;
 		if(inEditMode || isUndecidedQuestion){
-			addCategorizationButtons(thisQuestion);
+			addCategorizationButtons(thisQuestion, isWantedQuestion, isUnwantedQuestion);
 			thisQuestion.show();
 		}
 		else if(isUnwantedQuestion){
@@ -117,7 +117,7 @@ function resetQuestionDisplay(questionElement){
 	questionElement.find('.questionCategorization').remove();
 }
 
-function addCategorizationButtons(questionElement){
+function addCategorizationButtons(questionElement, wanted, unwanted){
 	
 	const instructions = `Is this a ${currentFilter} question?`;
 	const instructionsElement = `<span class="filterInstructions"><h4>${instructions}</h4></span>`;
@@ -139,6 +139,13 @@ function addCategorizationButtons(questionElement){
 	notInFilterButtonElement.click(() => {
 		questionDoesNotBelongInFilter(questionElement);
 	});
+	
+	if(wanted){
+		notInFilterButtonElement.css('opacity', '0.5');
+	}
+	else if(unwanted){
+		inFilterButtonElement.css('opacity', '0.5');
+	}
 }
 
 function questionBelongsInFilter(thisQuestion){
