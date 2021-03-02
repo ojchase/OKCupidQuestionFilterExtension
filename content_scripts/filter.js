@@ -315,7 +315,6 @@ function addEditFilterButton(){
 }
 
 function applyFilter(category){
-	alert(`Applying filter ${category}`);
 	inEditMode = false;
 	currentFilter = category;
 	deselectCategoriesVisually();
@@ -325,7 +324,6 @@ function applyFilter(category){
 }
 
 function editFilter(filterName){
-	alert(`Editing filter ${filterName}`);
 	inEditMode = true;
 	currentFilter = filterName;
 	deselectCategoriesVisually();
