@@ -23,18 +23,13 @@ function loadQuestionData(){
 	let questionCategoryPromise = browser.runtime.sendMessage({
 		"queryType": "GetQuestionCategories"
 	});
-	questionCategoryPromise.then(logSuccessResponse).catch(logFailureResponse);
+	questionCategoryPromise.catch(logFailureResponse);
 	return Promise.all([questionsPromise, questionCategoryPromise]).then(function([theQuestions, theCategories]){
 		questions = theQuestions;
 		questionCategories = theCategories;
 	});
 }
 
-function logSuccessResponse(response){
-	console.log("Content script got a response!");
-	console.log(response);
-	return response;
-}
 function logFailureResponse(response){
 	console.log("Content script got a bad response!");
 	console.log(response);
@@ -421,7 +416,7 @@ function getQuestions(){
 	let questionsPromise = browser.runtime.sendMessage({
 		"queryType": "GetQuestions"
 	});
-	return questionsPromise.catch(logFailureResponse).then(logSuccessResponse);
+	return questionsPromise.catch(logFailureResponse);
 }
 
 function getQuestionByText(questions, text){
@@ -472,7 +467,7 @@ const saveQuestions = _.debounce(function(questions) {
 		"queryType": "SaveQuestions",
 		"updatedQuestions": questions
 	});
-	return savePromise.catch(logFailureResponse).then(logSuccessResponse);
+	return savePromise.catch(logFailureResponse);
 }, 5000);
 
 function isOnPublicFilter(){
