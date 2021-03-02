@@ -4,7 +4,6 @@ if (window.hasRunOKCupidQuestionFilterExtensionFilter) {
 }
 window.hasRunOKCupidQuestionFilterExtensionFilter = true;
   
-console.log("Script is running");
 let currentFilter = undefined;
 let questions;
 let questionCategories;
@@ -12,7 +11,6 @@ let inEditMode = false;
 var jq = jQuery.noConflict();
 loadQuestionData().then(function(){
 	jq(document).ready(() => {
-		document.body.style.border = "5px solid red";
 		listenForPageChanges();
 		manipulatePage();
 	});
@@ -40,7 +38,6 @@ function manipulatePage(){
 	currentFilter = undefined;
 	inEditMode = false;
 	waitForPageToLoad('.page-loading, .isLoading').then(function(){
-		document.body.style.border = "5px solid blue";
 		if(isOnAQuestionPage()){
 			listenForQuestionListUpdates();
 			createFilterButtons();
@@ -55,7 +52,6 @@ function listenForPageChanges(){
 	setInterval(function() {
 		if(window.location.href != currentUrl) {
 			currentUrl = window.location.href;
-			document.body.style.border = "5px solid red";
 			manipulatePage();
 		}
 	}, 3000);
