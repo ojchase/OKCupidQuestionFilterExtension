@@ -18,12 +18,6 @@
 		"page": "background_scripts/background.html"
 	},
 
-	"browser_action": {
-		"default_icon": "icons/archer.svg",
-		"default_title": "OKCupidQuestionFilter",
-		"default_popup": "popup/choose_beast.html"
-	},
-
 	"content_scripts": [
 		{
 			"matches": ["*://*.okcupid.com/*", "*://okcupid.com/*"],
