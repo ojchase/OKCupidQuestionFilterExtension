@@ -342,6 +342,17 @@ function findFilterButtonByName(filterName){
 	return selectedButton;
 }
 
+function getTotalNumberOfQuestionsAnsweredByUser(){
+	let count = 0;
+	let $countElements = jq('button.profile-questions-filter')
+		.not('button.user-defined-filter')
+		.children('span.profile-questions-filter-count');
+	$countElements.each(function(index){
+		count += Number(jq(this).text());
+	});
+	return count;
+}
+
 // Agree/Disagree/Find Out - whichever is selected. If none are selected, -1. 
 // (This is probably because the url was changed to have a filter_id that's not 9, 10, or 11. We don't know how many questions are coming.
 function getNumberOfQuestionsInSelectedDefaultFilter(){
@@ -361,11 +372,16 @@ function getNumberOfLoadedQuestionsFromUser(){
 	return jq('div.profile-question').length;
 }
 
-// Number of questions that are still offscreen. -1 if we don't know the size of the current default filter.
+// Number of questions that are still offscreen. -1 if we don't know the size of the currently loaded page.
 function getNumberOfUnloadedQuestionsFromUser(){
 	let totalOnPage = getNumberOfQuestionsInSelectedDefaultFilter();
 	if(totalOnPage === -1){
-		return -1;
+		if(isOnPublicFilter()){
+			totalOnPage = getTotalNumberOfQuestionsAnsweredByUser();
+		}
+		else{
+			return -1;
+		}
 	}
 	return totalOnPage - getNumberOfLoadedQuestionsFromUser();
 }
@@ -443,5 +459,11 @@ const saveQuestions = _.debounce(function(questions) {
 	});
 	return savePromise.catch(logFailureResponse).then(logSuccessResponse);
 }, 5000);
+
+function isOnPublicFilter(){
+	const urlParams = new URLSearchParams(window.location.search);
+	const filterId = urlParams.get('filter_id');
+	return Number(filterId) === 1;
+}
 
 })();
