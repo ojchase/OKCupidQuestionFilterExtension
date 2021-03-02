@@ -307,6 +307,9 @@ function addEditFilterButton(){
 }
 
 function applyFilter(category){
+	if(!isOnPublicFilter()){
+		setToPublicFilter();
+	}
 	alert(`Applying filter ${category}`);
 	inEditMode = false;
 	currentFilter = category;
@@ -317,6 +320,9 @@ function applyFilter(category){
 }
 
 function editFilter(filterName){
+	if(!isOnPublicFilter()){
+		setToPublicFilter();
+	}
 	alert(`Editing filter ${filterName}`);
 	inEditMode = true;
 	currentFilter = filterName;
@@ -464,6 +470,15 @@ function isOnPublicFilter(){
 	const urlParams = new URLSearchParams(window.location.search);
 	const filterId = urlParams.get('filter_id');
 	return Number(filterId) === 1;
+}
+
+function setToPublicFilter(newUrl){
+	const urlParams = new URLSearchParams(window.location.search);
+	urlParams.set('filter_id', 1);
+	const currentUrl = new URL(window.location.href);
+	currentUrl.search = urlParams;
+	const newUrlString = currentUrl.toString();
+	window.location.replace(newUrlString);
 }
 
 })();
