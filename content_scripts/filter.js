@@ -214,23 +214,23 @@ function updateFilterCounts(){
 		const thisFilter = jq(this);
 		const filterName = thisFilter.children('span.profile-questions-filter-title').first().text();
 		const questionsInCategory = getQuestionsInCategory(filterName);
-		const questionsThatCurrentlyMatch = getNumberOfLoadedQuestionsInCategory(questionsInCategory);
+		const countOfQuestionsThatCurrentlyMatch = getNumberOfLoadedQuestionsInCategory(questionsInCategory);
 		const questionsUndecidedInCategory = getQuestionsWithCategoryUndecided(filterName);
-		const questionsThatCurrentlyMightMatch = getNumberOfLoadedQuestionsInCategory(questionsUndecidedInCategory);
+		const countOfQuestionsThatCurrentlyMightMatch = getNumberOfLoadedQuestionsInCategory(questionsUndecidedInCategory);
 		const numUnloaded = getNumberOfUnloadedQuestionsFromUser();
 		
-		let possible = questionsThatCurrentlyMatch + questionsThatCurrentlyMightMatch;
+		let possible = countOfQuestionsThatCurrentlyMatch + countOfQuestionsThatCurrentlyMightMatch;
 		let result;
 		if(numUnloaded === -1){
-			result = `${questionsThatCurrentlyMatch}+`;
+			result = `${countOfQuestionsThatCurrentlyMatch}+`;
 		}
 		else {
 			possible += numUnloaded;
-			if(questionsThatCurrentlyMatch === possible){
-				result = `${questionsThatCurrentlyMatch}`;
+			if(countOfQuestionsThatCurrentlyMatch === possible){
+				result = `${countOfQuestionsThatCurrentlyMatch}`;
 			}
 			else{
-				result = `${questionsThatCurrentlyMatch}-${possible}`;
+				result = `${countOfQuestionsThatCurrentlyMatch}-${possible}`;
 			}
 		}
 		thisFilter.children(`.profile-questions-filter-count`).text(`${result}`);
