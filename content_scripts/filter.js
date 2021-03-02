@@ -10,9 +10,23 @@ let questions;
 let questionCategories;
 let inEditMode = false;
 var jq = jQuery.noConflict();
-jq(document).ready(() => {
-	manipulatePage();
+loadQuestionData().then(function(){
+	jq(document).ready(() => {
+		manipulatePage();
+	});
 });
+
+function loadQuestionData(){
+	let questionsPromise = getQuestions();
+	let questionCategoryPromise = browser.runtime.sendMessage({
+		"queryType": "GetQuestionCategories"
+	});
+	questionCategoryPromise.then(logSuccessResponse).catch(logFailureResponse);
+	return Promise.all([questionsPromise, questionCategoryPromise]).then(function([theQuestions, theCategories]){
+		questions = theQuestions;
+		questionCategories = theCategories;
+	});
+}
 
 function logSuccessResponse(response){
 	console.log("Content script got a response!");
@@ -27,17 +41,7 @@ function logFailureResponse(response){
 function manipulatePage(){
 	document.body.style.border = "5px solid red";
 	
-	let questionsPromise = getQuestions();
-	let questionCategoryPromise = browser.runtime.sendMessage({
-		"queryType": "GetQuestionCategories"
-	});
-	questionCategoryPromise.then(logSuccessResponse).catch(logFailureResponse);
-	let pageLoadedPromise = waitForPageToLoad('.page-loading, .isLoading');
-	
-	Promise.all([questionsPromise, questionCategoryPromise, pageLoadedPromise]).then(function([theQuestions, theCategories]){
-		questions = theQuestions;
-		questionCategories = theCategories;
-		
+	waitForPageToLoad('.page-loading, .isLoading').then(function(){
 		document.body.style.border = "5px solid blue";
 		listenForQuestionListUpdates();
 		createFilterButtons();
