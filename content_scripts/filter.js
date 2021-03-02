@@ -10,9 +10,25 @@ let questions;
 let questionCategories;
 let inEditMode = false;
 var jq = jQuery.noConflict();
-jq(document).ready(() => {
-	manipulatePage();
+loadQuestionData().then(function(){
+	jq(document).ready(() => {
+		document.body.style.border = "5px solid red";
+		listenForPageChanges();
+		manipulatePage();
+	});
 });
+
+function loadQuestionData(){
+	let questionsPromise = getQuestions();
+	let questionCategoryPromise = browser.runtime.sendMessage({
+		"queryType": "GetQuestionCategories"
+	});
+	questionCategoryPromise.then(logSuccessResponse).catch(logFailureResponse);
+	return Promise.all([questionsPromise, questionCategoryPromise]).then(function([theQuestions, theCategories]){
+		questions = theQuestions;
+		questionCategories = theCategories;
+	});
+}
 
 function logSuccessResponse(response){
 	console.log("Content script got a response!");
@@ -24,56 +40,39 @@ function logFailureResponse(response){
 	console.log(response);
 }
 
+// Note that the current design has this script active on all okcupid.com pages.
 function manipulatePage(){
-	document.body.style.border = "5px solid red";
-	
-	let questionsPromise = getQuestions();
-	let questionCategoryPromise = browser.runtime.sendMessage({
-		"queryType": "GetQuestionCategories"
-	});
-	questionCategoryPromise.then(logSuccessResponse).catch(logFailureResponse);
-	let pageLoadedPromise = waitForPageToLoad('.page-loading, .isLoading');
-	
-	Promise.all([questionsPromise, questionCategoryPromise, pageLoadedPromise]).then(function([theQuestions, theCategories]){
-		questions = theQuestions;
-		questionCategories = theCategories;
-		
+	waitForPageToLoad('.page-loading, .isLoading').then(function(){
 		document.body.style.border = "5px solid blue";
-		listenForQuestionListUpdates();
-		createFilterButtons();
-		manipulateQuestionElements();
-	}).catch((e) => {
-		console.log("It's not loaded!")
-		console.log(e);
+		if(isOnAQuestionPage()){
+			listenForQuestionListUpdates();
+			createFilterButtons();
+			manipulateQuestionElements();
+		}
 	});
 }
 
+let currentUrl = location.href;
+function listenForPageChanges(){
+	// Thanks to https://stackoverflow.com/a/1930942
+	setInterval(function() {
+		if(window.location.href != currentUrl) {
+			currentUrl = window.location.href;
+			document.body.style.border = "5px solid red";
+			manipulatePage();
+		}
+	}, 3000);
+}
 
-// Promise
-//Note that the current design has this script active on all okcupid.com pages,
-//not just the questions page, as I can't detect the questions page being up if
-//it was launched via okcupid internal links.
-//See https://stackoverflow.com/questions/20865581/chrome-extension-content-script-not-loaded-until-page-is-refreshed
 async function waitForPageToLoad(selector){
 	return new Promise(async (resolve,reject) => {
-		let loaded = false;
-		let timedOut = false;
-		const timeoutId = window.setTimeout(()=>{
-			if(loaded){
-				return;
-			}
-			timedOut = true;
-			reject();
-		},30000);
-		while(!isPageLoaded(selector) && !timedOut){
+		while(!isPageLoaded(selector)){
 			await new Promise((resolveSimpleTimeout) => {
 				window.setTimeout(() => {
 					resolveSimpleTimeout();
 				}, 500);
 			});
 		}
-		window.clearTimeout(timeoutId);
-		loaded = true;
 		resolve();
 	});
 }
@@ -464,6 +463,10 @@ function isOnPublicFilter(){
 	const urlParams = new URLSearchParams(window.location.search);
 	const filterId = urlParams.get('filter_id');
 	return Number(filterId) === 1;
+}
+
+function isOnAQuestionPage(){
+	return window.location.href.includes("/questions");
 }
 
 })();
