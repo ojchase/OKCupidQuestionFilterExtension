@@ -56,24 +56,13 @@ function manipulatePage(){
 //See https://stackoverflow.com/questions/20865581/chrome-extension-content-script-not-loaded-until-page-is-refreshed
 async function waitForPageToLoad(selector){
 	return new Promise(async (resolve,reject) => {
-		let loaded = false;
-		let timedOut = false;
-		const timeoutId = window.setTimeout(()=>{
-			if(loaded){
-				return;
-			}
-			timedOut = true;
-			reject();
-		},30000);
-		while(!isPageLoaded(selector) && !timedOut){
+		while(!isPageLoaded(selector)){
 			await new Promise((resolveSimpleTimeout) => {
 				window.setTimeout(() => {
 					resolveSimpleTimeout();
 				}, 500);
 			});
 		}
-		window.clearTimeout(timeoutId);
-		loaded = true;
 		resolve();
 	});
 }
