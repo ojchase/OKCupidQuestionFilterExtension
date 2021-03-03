@@ -84,36 +84,41 @@ function isPageLoaded(selector){
 }
 
 function manipulateQuestionElements(){
+	let $questionDivs = jq('div.profile-question');
 	updateFilterCounts();
 	
 	let questionsInCategory = getQuestionsInCategory(currentFilter);
 	let questionsNotInCategory = getQuestionsNotInCategory(currentFilter);
-	jq('div.profile-question').each(function(index){
+	$questionDivs.each(function(index){
 		const thisQuestion = jq(this) // when jq.each is run, it calls the callback and sets the 'this' context when running to the DOM item
-		resetQuestionDisplay(thisQuestion);
-		const isLoaded = !thisQuestion.hasClass('isLoading');
-		if(!isLoaded){
-			thisQuestion.show();
-			return;
-		}
-		
-		const questionText = thisQuestion.find('h3').text();
-		const isUnwantedQuestion = questionsNotInCategory.includes(questionText);
-		const isWantedQuestion = questionsInCategory.includes(questionText);
-		const isUndecidedQuestion = !isUnwantedQuestion && !isWantedQuestion;
-		if(inEditMode || isUndecidedQuestion){
-			addCategorizationButtons(thisQuestion, isWantedQuestion, isUnwantedQuestion);
-			thisQuestion.css('border', `2px dashed gray`)
-
-			thisQuestion.show();
-		}
-		else if(isUnwantedQuestion){
-			thisQuestion.hide();
-		}
-		else{ // isWantedQuestion
-			thisQuestion.show();
-		}
+		manipulateQuestionElement(thisQuestion, questionsInCategory, questionsNotInCategory);
 	});
+}
+
+function manipulateQuestionElement(thisQuestion, questionsInCategory, questionsNotInCategory){
+	resetQuestionDisplay(thisQuestion);
+	const isLoaded = !thisQuestion.hasClass('isLoading');
+	if(!isLoaded){
+		thisQuestion.show();
+		return;
+	}
+	
+	const questionText = thisQuestion.find('h3').text();
+	const isUnwantedQuestion = questionsNotInCategory.includes(questionText);
+	const isWantedQuestion = questionsInCategory.includes(questionText);
+	const isUndecidedQuestion = !isUnwantedQuestion && !isWantedQuestion;
+	if(inEditMode || isUndecidedQuestion){
+		addCategorizationButtons(thisQuestion, isWantedQuestion, isUnwantedQuestion);
+		thisQuestion.css('border', `2px dashed gray`)
+
+		thisQuestion.show();
+	}
+	else if(isUnwantedQuestion){
+		thisQuestion.hide();
+	}
+	else{ // isWantedQuestion
+		thisQuestion.show();
+	}
 }
 
 function resetQuestionDisplay(questionElement){
