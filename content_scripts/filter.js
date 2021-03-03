@@ -347,7 +347,9 @@ function getTotalNumberOfQuestionsAnsweredByUser(){
 		.not('button.user-defined-filter')
 		.children('span.profile-questions-filter-count');
 	$countElements.each(function(index){
-		count += Number(jq(this).text());
+		let countString = jq(this).text();
+		countString = countString.replace(/,/g, ''); // remove commas, which OKCupid has. This probably does not internationalize. My locale has commas, e.g. 1,234 questions
+		count += Number(countString);
 	});
 	return count;
 }
