@@ -83,37 +83,53 @@ function isPageLoaded(selector){
 	return jq(selector).length === 0;
 }
 
+function verifyAllQuestionsAreDefined($questionDivs){
+	$questionDivs.each(function(index){
+		const thisQuestion = jq(this);
+		const questionText = thisQuestion.find('h3').text();
+		if(getQuestionByText(questions, questionText) === undefined){
+			addQuestion(questions, questionText);
+		}
+	});
+}
+
 function manipulateQuestionElements(){
+	let $questionDivs = jq('div.profile-question');
+	verifyAllQuestionsAreDefined($questionDivs);
 	updateFilterCounts();
 	
 	let questionsInCategory = getQuestionsInCategory(currentFilter);
 	let questionsNotInCategory = getQuestionsNotInCategory(currentFilter);
-	jq('div.profile-question').each(function(index){
+	$questionDivs.each(function(index){
 		const thisQuestion = jq(this) // when jq.each is run, it calls the callback and sets the 'this' context when running to the DOM item
-		resetQuestionDisplay(thisQuestion);
-		const isLoaded = !thisQuestion.hasClass('isLoading');
-		if(!isLoaded){
-			thisQuestion.show();
-			return;
-		}
-		
-		const questionText = thisQuestion.find('h3').text();
-		const isUnwantedQuestion = questionsNotInCategory.includes(questionText);
-		const isWantedQuestion = questionsInCategory.includes(questionText);
-		const isUndecidedQuestion = !isUnwantedQuestion && !isWantedQuestion;
-		if(inEditMode || isUndecidedQuestion){
-			addCategorizationButtons(thisQuestion, isWantedQuestion, isUnwantedQuestion);
-			thisQuestion.css('border', `2px dashed gray`)
-
-			thisQuestion.show();
-		}
-		else if(isUnwantedQuestion){
-			thisQuestion.hide();
-		}
-		else{ // isWantedQuestion
-			thisQuestion.show();
-		}
+		manipulateQuestionElement(thisQuestion, questionsInCategory, questionsNotInCategory);
 	});
+}
+
+function manipulateQuestionElement(thisQuestion, questionsInCategory, questionsNotInCategory){
+	resetQuestionDisplay(thisQuestion);
+	const isLoaded = !thisQuestion.hasClass('isLoading');
+	if(!isLoaded){
+		thisQuestion.show();
+		return;
+	}
+	
+	const questionText = thisQuestion.find('h3').text();
+	const isUnwantedQuestion = questionsNotInCategory.includes(questionText);
+	const isWantedQuestion = questionsInCategory.includes(questionText);
+	const isUndecidedQuestion = !isUnwantedQuestion && !isWantedQuestion;
+	if(inEditMode || isUndecidedQuestion){
+		addCategorizationButtons(thisQuestion, isWantedQuestion, isUnwantedQuestion);
+		thisQuestion.css('border', `2px dashed gray`)
+
+		thisQuestion.show();
+	}
+	else if(isUnwantedQuestion){
+		thisQuestion.hide();
+	}
+	else{ // isWantedQuestion
+		thisQuestion.show();
+	}
 }
 
 function resetQuestionDisplay(questionElement){
@@ -409,12 +425,7 @@ function getQuestions(){
 }
 
 function getQuestionByText(questions, text){
-	let question = questions.find(q => q.QuestionText === text);
-	if(!question){
-		question = addQuestion(questions, text);
-		saveQuestions(questions);
-	}
-	return question;
+	return questions.find(q => q.QuestionText === text);
 }
 
 function getQuestionsInCategory(category){
@@ -452,6 +463,7 @@ function addQuestion(questions, questionText){
 	let newQuestion = {};
 	newQuestion["QuestionText"] = questionText;
 	questions.push(newQuestion);
+	saveQuestions(questions);
 	return newQuestion;
 }
 
