@@ -83,8 +83,19 @@ function isPageLoaded(selector){
 	return jq(selector).length === 0;
 }
 
+function verifyAllQuestionsAreDefined($questionDivs){
+	$questionDivs.each(function(index){
+		const thisQuestion = jq(this);
+		const questionText = thisQuestion.find('h3').text();
+		if(getQuestionByText(questions, questionText) === undefined){
+			addQuestion(questions, questionText);
+		}
+	});
+}
+
 function manipulateQuestionElements(){
 	let $questionDivs = jq('div.profile-question');
+	verifyAllQuestionsAreDefined($questionDivs);
 	updateFilterCounts();
 	
 	let questionsInCategory = getQuestionsInCategory(currentFilter);
@@ -414,12 +425,7 @@ function getQuestions(){
 }
 
 function getQuestionByText(questions, text){
-	let question = questions.find(q => q.QuestionText === text);
-	if(!question){
-		question = addQuestion(questions, text);
-		saveQuestions(questions);
-	}
-	return question;
+	return questions.find(q => q.QuestionText === text);
 }
 
 function getQuestionsInCategory(category){
@@ -457,6 +463,7 @@ function addQuestion(questions, questionText){
 	let newQuestion = {};
 	newQuestion["QuestionText"] = questionText;
 	questions.push(newQuestion);
+	saveQuestions(questions);
 	return newQuestion;
 }
 
