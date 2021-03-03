@@ -42,6 +42,8 @@ function logFailureResponse(response){
 
 // Note that the current design has this script active on all okcupid.com pages.
 function manipulatePage(){
+	currentFilter = undefined;
+	inEditMode = false;
 	waitForPageToLoad('.page-loading, .isLoading').then(function(){
 		document.body.style.border = "5px solid blue";
 		if(isOnAQuestionPage()){
