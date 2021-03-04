@@ -4,7 +4,6 @@ if (window.hasRunOKCupidQuestionFilterExtensionFilter) {
 }
 window.hasRunOKCupidQuestionFilterExtensionFilter = true;
   
-console.log("Script is running");
 let currentFilter = undefined;
 let questions;
 let questionCategories;
@@ -12,29 +11,25 @@ let inEditMode = false;
 var jq = jQuery.noConflict();
 loadQuestionData().then(function(){
 	jq(document).ready(() => {
-		document.body.style.border = "5px solid red";
 		listenForPageChanges();
 		manipulatePage();
 	});
 });
 
 function loadQuestionData(){
-	let questionsPromise = getQuestions();
+	let questionsPromise = browser.runtime.sendMessage({
+		"queryType": "GetQuestions"
+	}).catch(logFailureResponse);
 	let questionCategoryPromise = browser.runtime.sendMessage({
 		"queryType": "GetQuestionCategories"
 	});
-	questionCategoryPromise.then(logSuccessResponse).catch(logFailureResponse);
+	questionCategoryPromise.catch(logFailureResponse);
 	return Promise.all([questionsPromise, questionCategoryPromise]).then(function([theQuestions, theCategories]){
 		questions = theQuestions;
 		questionCategories = theCategories;
 	});
 }
 
-function logSuccessResponse(response){
-	console.log("Content script got a response!");
-	console.log(response);
-	return response;
-}
 function logFailureResponse(response){
 	console.log("Content script got a bad response!");
 	console.log(response);
@@ -45,7 +40,6 @@ function manipulatePage(){
 	currentFilter = undefined;
 	inEditMode = false;
 	waitForPageToLoad('.page-loading, .isLoading').then(function(){
-		document.body.style.border = "5px solid blue";
 		if(isOnAQuestionPage()){
 			listenForQuestionListUpdates();
 			createFilterButtons();
@@ -60,7 +54,6 @@ function listenForPageChanges(){
 	setInterval(function() {
 		if(window.location.href != currentUrl) {
 			currentUrl = window.location.href;
-			document.body.style.border = "5px solid red";
 			manipulatePage();
 		}
 	}, 3000);
@@ -226,34 +219,6 @@ function createButton(title, isAFilter){
 	return newButton;
 }
 
-function updateFilterCounts(){
-	jq('button.profile-questions-filter.user-defined-filter').each(function(index){
-		const thisFilter = jq(this);
-		const filterName = thisFilter.children('span.profile-questions-filter-title').first().text();
-		const questionsInCategory = getQuestionsInCategory(filterName);
-		const countOfQuestionsThatCurrentlyMatch = getNumberOfLoadedQuestionsInCategory(questionsInCategory);
-		const questionsUndecidedInCategory = getQuestionsWithCategoryUndecided(filterName);
-		const countOfQuestionsThatCurrentlyMightMatch = getNumberOfLoadedQuestionsInCategory(questionsUndecidedInCategory);
-		const numUnloaded = getNumberOfUnloadedQuestionsFromUser();
-		
-		let possible = countOfQuestionsThatCurrentlyMatch + countOfQuestionsThatCurrentlyMightMatch;
-		let result;
-		if(numUnloaded === -1){
-			result = `${countOfQuestionsThatCurrentlyMatch}+`;
-		}
-		else {
-			possible += numUnloaded;
-			if(countOfQuestionsThatCurrentlyMatch === possible){
-				result = `${countOfQuestionsThatCurrentlyMatch}`;
-			}
-			else{
-				result = `${countOfQuestionsThatCurrentlyMatch}-${possible}`;
-			}
-		}
-		thisFilter.children(`.profile-questions-filter-count`).text(`${result}`);
-	});
-}
-
 function addButton(button){
 	button.appendTo('div.profile-questions-filters-inner');
 }
@@ -324,7 +289,6 @@ function addEditFilterButton(){
 }
 
 function applyFilter(category){
-	alert(`Applying filter ${category}`);
 	inEditMode = false;
 	currentFilter = category;
 	deselectCategoriesVisually();
@@ -334,7 +298,6 @@ function applyFilter(category){
 }
 
 function editFilter(filterName){
-	alert(`Editing filter ${filterName}`);
 	inEditMode = true;
 	currentFilter = filterName;
 	deselectCategoriesVisually();
@@ -357,6 +320,34 @@ function findFilterButtonByName(filterName){
 		return jq(this).children(`.profile-questions-filter-title`).first().text().toUpperCase() == filterName.toUpperCase();
 	})
 	return selectedButton;
+}
+
+function updateFilterCounts(){
+	jq('button.profile-questions-filter.user-defined-filter').each(function(index){
+		const thisFilter = jq(this);
+		const filterName = thisFilter.children('span.profile-questions-filter-title').first().text();
+		const questionsInCategory = getQuestionsInCategory(filterName);
+		const countOfQuestionsThatCurrentlyMatch = getNumberOfLoadedQuestionsInCategory(questionsInCategory);
+		const questionsUndecidedInCategory = getQuestionsWithCategoryUndecided(filterName);
+		const countOfQuestionsThatCurrentlyMightMatch = getNumberOfLoadedQuestionsInCategory(questionsUndecidedInCategory);
+		const numUnloaded = getNumberOfUnloadedQuestionsFromUser();
+		
+		let possible = countOfQuestionsThatCurrentlyMatch + countOfQuestionsThatCurrentlyMightMatch;
+		let result;
+		if(numUnloaded === -1){
+			result = `${countOfQuestionsThatCurrentlyMatch}+`;
+		}
+		else {
+			possible += numUnloaded;
+			if(countOfQuestionsThatCurrentlyMatch === possible){
+				result = `${countOfQuestionsThatCurrentlyMatch}`;
+			}
+			else{
+				result = `${countOfQuestionsThatCurrentlyMatch}-${possible}`;
+			}
+		}
+		thisFilter.children(`.profile-questions-filter-count`).text(`${result}`);
+	});
 }
 
 function getTotalNumberOfQuestionsAnsweredByUser(){
@@ -417,13 +408,6 @@ function getNumberOfLoadedQuestionsInCategory(questionsInCategory){
 	return count;
 }
 
-function getQuestions(){
-	let questionsPromise = browser.runtime.sendMessage({
-		"queryType": "GetQuestions"
-	});
-	return questionsPromise.catch(logFailureResponse).then(logSuccessResponse);
-}
-
 function getQuestionByText(questions, text){
 	return questions.find(q => q.QuestionText === text);
 }
@@ -472,7 +456,7 @@ const saveQuestions = _.debounce(function(questions) {
 		"queryType": "SaveQuestions",
 		"updatedQuestions": questions
 	});
-	return savePromise.catch(logFailureResponse).then(logSuccessResponse);
+	return savePromise.catch(logFailureResponse);
 }, 5000);
 
 function isOnPublicFilter(){
