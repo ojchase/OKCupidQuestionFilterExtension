@@ -17,7 +17,9 @@ loadQuestionData().then(function(){
 });
 
 function loadQuestionData(){
-	let questionsPromise = getQuestions();
+	let questionsPromise = browser.runtime.sendMessage({
+		"queryType": "GetQuestions"
+	}).catch(logFailureResponse);
 	let questionCategoryPromise = browser.runtime.sendMessage({
 		"queryType": "GetQuestionCategories"
 	});
@@ -217,34 +219,6 @@ function createButton(title, isAFilter){
 	return newButton;
 }
 
-function updateFilterCounts(){
-	jq('button.profile-questions-filter.user-defined-filter').each(function(index){
-		const thisFilter = jq(this);
-		const filterName = thisFilter.children('span.profile-questions-filter-title').first().text();
-		const questionsInCategory = getQuestionsInCategory(filterName);
-		const countOfQuestionsThatCurrentlyMatch = getNumberOfLoadedQuestionsInCategory(questionsInCategory);
-		const questionsUndecidedInCategory = getQuestionsWithCategoryUndecided(filterName);
-		const countOfQuestionsThatCurrentlyMightMatch = getNumberOfLoadedQuestionsInCategory(questionsUndecidedInCategory);
-		const numUnloaded = getNumberOfUnloadedQuestionsFromUser();
-		
-		let possible = countOfQuestionsThatCurrentlyMatch + countOfQuestionsThatCurrentlyMightMatch;
-		let result;
-		if(numUnloaded === -1){
-			result = `${countOfQuestionsThatCurrentlyMatch}+`;
-		}
-		else {
-			possible += numUnloaded;
-			if(countOfQuestionsThatCurrentlyMatch === possible){
-				result = `${countOfQuestionsThatCurrentlyMatch}`;
-			}
-			else{
-				result = `${countOfQuestionsThatCurrentlyMatch}-${possible}`;
-			}
-		}
-		thisFilter.children(`.profile-questions-filter-count`).text(`${result}`);
-	});
-}
-
 function addButton(button){
 	button.appendTo('div.profile-questions-filters-inner');
 }
@@ -348,6 +322,34 @@ function findFilterButtonByName(filterName){
 	return selectedButton;
 }
 
+function updateFilterCounts(){
+	jq('button.profile-questions-filter.user-defined-filter').each(function(index){
+		const thisFilter = jq(this);
+		const filterName = thisFilter.children('span.profile-questions-filter-title').first().text();
+		const questionsInCategory = getQuestionsInCategory(filterName);
+		const countOfQuestionsThatCurrentlyMatch = getNumberOfLoadedQuestionsInCategory(questionsInCategory);
+		const questionsUndecidedInCategory = getQuestionsWithCategoryUndecided(filterName);
+		const countOfQuestionsThatCurrentlyMightMatch = getNumberOfLoadedQuestionsInCategory(questionsUndecidedInCategory);
+		const numUnloaded = getNumberOfUnloadedQuestionsFromUser();
+		
+		let possible = countOfQuestionsThatCurrentlyMatch + countOfQuestionsThatCurrentlyMightMatch;
+		let result;
+		if(numUnloaded === -1){
+			result = `${countOfQuestionsThatCurrentlyMatch}+`;
+		}
+		else {
+			possible += numUnloaded;
+			if(countOfQuestionsThatCurrentlyMatch === possible){
+				result = `${countOfQuestionsThatCurrentlyMatch}`;
+			}
+			else{
+				result = `${countOfQuestionsThatCurrentlyMatch}-${possible}`;
+			}
+		}
+		thisFilter.children(`.profile-questions-filter-count`).text(`${result}`);
+	});
+}
+
 function getTotalNumberOfQuestionsAnsweredByUser(){
 	let count = 0;
 	let $countElements = jq('button.profile-questions-filter')
@@ -404,13 +406,6 @@ function getNumberOfLoadedQuestionsInCategory(questionsInCategory){
 		}
 	});
 	return count;
-}
-
-function getQuestions(){
-	let questionsPromise = browser.runtime.sendMessage({
-		"queryType": "GetQuestions"
-	});
-	return questionsPromise.catch(logFailureResponse);
 }
 
 function getQuestionByText(questions, text){
