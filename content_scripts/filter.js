@@ -245,6 +245,12 @@ function addDeleteFilterButton(){
 				let correctlyCasedFilterName = $filterElement.children(`.profile-questions-filter-title`).first().text();
 				removeFilterButtonFromScreen($filterElement);
 				deleteFilterFromQuestions(correctlyCasedFilterName);
+				
+				if(currentFilter === correctlyCasedFilterName){
+					currentFilter = undefined;
+					inEditMode = false;
+					manipulateQuestionElements();
+				}
 			}
 			else{
 				alert(`Unable to find filter named ${deleteFilterName}`);
