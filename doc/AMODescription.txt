@@ -1,9 +1,0 @@
-Just so we have it in version control, the following is the text that should be manually copy/pasted into the description and related fields when submitting to addons.mozilla.org:
-
-
-
-## External resources used ##
-
-Icons made by [Freepik](https://www.freepik.com "Freepik") from [www.flaticon.com](https://www.flaticon.com/ "Flaticon")
-jQuery 3.5.1
-Underscore.js 1.12
