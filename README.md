@@ -1,4 +1,4 @@
-# OkCupidQuestionFilter #
+# OkCupid Question Filter #
 
 ## Quick Summary ##
 
