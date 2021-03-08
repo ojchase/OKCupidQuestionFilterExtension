@@ -137,8 +137,8 @@ function addCategorizationButtons(questionElement, wanted, unwanted){
 	
 	const showClass = 'showButton';
 	const hideClass = 'hideButton';
-	const inFilterButton = `<button class="${showClass}"><span>Show</span></button>`;
-	const notInFilterButton = `<button class="${hideClass}"><span>Hide</span></button>`;
+	const inFilterButton = `<button class="${showClass}"><span>Yes</span></button>`;
+	const notInFilterButton = `<button class="${hideClass}"><span>No</span></button>`;
 	
 	const categorizationDiv = `<div class="questionCategorization">${instructionsElement}${inFilterButton}${notInFilterButton}</div>`;
 	questionElement.append(categorizationDiv);
