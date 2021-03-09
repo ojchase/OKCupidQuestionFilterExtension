@@ -1,5 +1,9 @@
 # OkCupid Question Filter #
 
+# Download link #
+
+Download at https://addons.mozilla.org/en-US/firefox/addon/okcupid-question-filter/
+
 ## Quick Summary ##
 
 Allows filtering of answered questions on OKCupid.com dating profiles according to user-defined categories
