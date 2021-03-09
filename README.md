@@ -2,7 +2,7 @@
 
 ## Quick Summary ##
 
-This Firefox extension expands OkCupid's question display behavior to allow you to create custom categories of questions and filter a prospective date's profile to just the questions you are interested in seeing.
+Allows filtering of answered questions on OKCupid.com dating profiles according to user-defined categories
 
 ## The Problem ##
 
