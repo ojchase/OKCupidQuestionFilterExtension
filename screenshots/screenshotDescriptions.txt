@@ -1,0 +1,11 @@
+DefaultView.jpg:
+The default view of the questions page upon install. Note the new buttons to create and manage filters.
+
+Filtered:
+A questions page when a trained filter is selected. Note that the questions are related to personality as the user has taken the time to teach the extension which questions are/aren't related to personality.
+
+Training:
+A questions page on a filter that hasn't been fully trained. Note that the question about politics needs guidance about whether it should be included in the Hobbies category.
+
+Edit:
+An questions page while a filter is being edited. Note that all questions are visible and you can change previous decisions.
