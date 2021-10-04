@@ -180,7 +180,7 @@ function questionDoesNotBelongInFilter(thisQuestion){
 
 function listenForQuestionListUpdates(){
 	// Thanks to https://stackoverflow.com/a/42805882/1541186 for the approach here
-	var target = document.querySelector('div.profile-questions');
+	var target = document.querySelector('div.profile-questions-filters');
 	var observer = new MutationObserver(function(mutations) {
 		manipulateQuestionElements();
 	});
