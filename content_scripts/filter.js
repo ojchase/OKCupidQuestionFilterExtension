@@ -76,8 +76,8 @@ function isPageLoaded(selector){
 	return jq(selector).length === 0;
 }
 
-function verifyAllQuestionsAreDefined($questionDivs){
-	$questionDivs.each(function(index){
+function verifyAllQuestionsAreDefined($questionElements){
+	$questionElements.each(function(index){
 		const thisQuestion = jq(this);
 		const questionText = thisQuestion.find('h3').text();
 		if(getQuestionByText(questions, questionText) === undefined){
@@ -87,13 +87,13 @@ function verifyAllQuestionsAreDefined($questionDivs){
 }
 
 function manipulateQuestionElements(){
-	let $questionDivs = jq('div.profile-question');
-	verifyAllQuestionsAreDefined($questionDivs);
+	let $questionElements = jq('.profile-question');
+	verifyAllQuestionsAreDefined($questionElements);
 	updateFilterCounts();
 	
 	let questionsInCategory = getQuestionsInCategory(currentFilter);
 	let questionsNotInCategory = getQuestionsNotInCategory(currentFilter);
-	$questionDivs.each(function(index){
+	$questionElements.each(function(index){
 		const thisQuestion = jq(this) // when jq.each is run, it calls the callback and sets the 'this' context when running to the DOM item
 		manipulateQuestionElement(thisQuestion, questionsInCategory, questionsNotInCategory);
 	});
@@ -385,7 +385,7 @@ function getNumberOfQuestionsInSelectedDefaultFilter(){
 
 // Number of questions that would be on screen if the extension weren't present
 function getNumberOfLoadedQuestionsFromUser(){
-	return jq('div.profile-question').length;
+	return jq('.profile-question').length;
 }
 
 // Number of questions that are still offscreen. -1 if we don't know the size of the currently loaded page.
@@ -404,7 +404,7 @@ function getNumberOfUnloadedQuestionsFromUser(){
 
 function getNumberOfLoadedQuestionsInCategory(questionsInCategory){
 	let count = 0;
-	jq('div.profile-question').each(function(index){
+	jq('.profile-question').each(function(index){
 		const thisQuestion = jq(this);
 		const questionText = thisQuestion.find('h3').text();
 		if(questionsInCategory.includes(questionText)){
