@@ -41,7 +41,7 @@ function manipulatePage(){
 	inEditMode = false;
 	waitForPageToLoad('.page-loading, .isLoading').then(function(){
 		if(isOnAQuestionPage()){
-			listenForQuestionListUpdates();
+			listenForQuestionUpdates();
 			createFilterButtons();
 			manipulateQuestionElements();
 		}
@@ -178,13 +178,16 @@ function questionDoesNotBelongInFilter(thisQuestion){
 	manipulateQuestionElements();
 }
 
-function listenForQuestionListUpdates(){
+function listenForQuestionUpdates(){
 	// Thanks to https://stackoverflow.com/a/42805882/1541186 for the approach here
 	var target = document.querySelector('div.profile-questions-filters');
 	var observer = new MutationObserver(function(mutations) {
 		manipulateQuestionElements();
 	});
 	var config = { childList: true};
+	observer.observe(target, config);
+	
+	target = document.querySelector('.profile-questions');
 	observer.observe(target, config);
 }
 
