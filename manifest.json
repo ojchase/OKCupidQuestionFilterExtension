@@ -3,7 +3,7 @@
 	"description": "Allows filtering of answered questions on OKCupid.com dating profiles according to user-defined categories",
 	"manifest_version": 2,
 	"name": "OKCupid Question Filter",
-	"version": "1.0",
+	"version": "1.1",
 	"homepage_url": "https://github.com/ojchase/OKCupidQuestionFilterExtension",
 	"icons": {
 		"48": "icons/archer.svg"
