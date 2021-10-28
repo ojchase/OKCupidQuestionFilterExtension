@@ -496,7 +496,7 @@ function isOnPublicFilter(){
 }
 
 function isOnAQuestionPage(href){
-	return href.includes("/questions");
+	return href.includes("/questions") && !href.includes("questionsearch");
 }
 
 })();
