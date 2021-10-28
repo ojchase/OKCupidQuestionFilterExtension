@@ -40,7 +40,7 @@ function manipulatePage(){
 	currentFilter = undefined;
 	inEditMode = false;
 	waitForPageToLoad('.page-loading, .isLoading').then(function(){
-		if(isOnAQuestionPage()){
+		if(isOnAQuestionPage(window.location.href)){
 			listenForQuestionUpdates();
 			createFilterButtons();
 			manipulateQuestionElements();
@@ -49,14 +49,35 @@ function manipulatePage(){
 }
 
 let currentUrl = location.href;
+let currentProfile = undefined;
 function listenForPageChanges(){
 	// Thanks to https://stackoverflow.com/a/1930942
 	setInterval(function() {
 		if(window.location.href != currentUrl) {
 			currentUrl = window.location.href;
-			manipulatePage();
+			
+			if(isOnAQuestionPage(currentUrl)){
+				let newProfile = getProfileFromUrl(currentUrl);
+				if(newProfile != currentProfile){
+					currentProfile = newProfile;
+					manipulatePage();
+				}
+			}
+			else{
+				currentProfile = undefined;
+			}
 		}
 	}, 3000);
+}
+
+function getProfileFromUrl(href){
+	let pathnameParts = href.split('/');
+	let profileIndex = pathnameParts.indexOf('profile')
+	if(profileIndex == -1){
+		return null;
+	}
+	let profileNameIndex = profileIndex + 1;
+	return pathnameParts[profileNameIndex];
 }
 
 async function waitForPageToLoad(selector){
@@ -474,8 +495,8 @@ function isOnPublicFilter(){
 	return Number(filterId) === 1;
 }
 
-function isOnAQuestionPage(){
-	return window.location.href.includes("/questions");
+function isOnAQuestionPage(href){
+	return href.includes("/questions");
 }
 
 })();
